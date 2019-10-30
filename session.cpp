@@ -85,6 +85,11 @@ QJsonObject session::readFromDB()
                         QSqlQuery qRoomsID;
                         QList<int> lRoomsID;
                         QString qsRoomsID = "select room_id from rooms_users where rooms_users.user_id = %1";
+//                        QSqlQuery qRoomsName;
+//                        QList<int> lRoomsName;
+//                        QString qsRooms = "select rooms_users.room_id, rooms.name"
+//                                          "from rooms_users inner join rooms on rooms.id = rooms_users.room_id"
+//                                          "where rooms_users.user_id = %1";
                         if (!qRoomsID.exec(qsRoomsID.arg(id))){
                             qDebug() << "query select room_id error" << qRoomsID.lastError();
                         }
