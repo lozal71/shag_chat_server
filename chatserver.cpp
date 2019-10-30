@@ -39,6 +39,14 @@ void chatServer::removeSession()
             break;
         }
     }
+    QSqlQuery query;
+    QString qsSetUserOffLine;
+    qsSetUserOffLine = "UPDATE users SET status = 2  WHERE id = \"";
+    qsSetUserOffLine.append(QString::number(sessionPntr->getID()));
+    qsSetUserOffLine.append("\"");
+    if (!query.exec(qsSetUserOffLine)){
+        qDebug() << "query UPDATE error" << query.lastError();
+    }
     delete sessionPntr;
 }
 
