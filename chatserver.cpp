@@ -57,7 +57,7 @@ void chatServer::connectChatToDB()
     QString pathDB = QFileInfo(pathBIN).path();
     qDebug() <<"pathDB" << pathDB;
     //dbChat.setDatabaseName("D:/itstep/Qt/Projects/server_221019/chat_server-master/chat_server-master/chat.db3");
-    dbChat.setDatabaseName(pathDB+"/DB/chat.db3");
+    dbChat.setDatabaseName(pathDB+"/DBchat/chat.db3");
     if (!dbChat.open())
     {
         qDebug() << "error connect";

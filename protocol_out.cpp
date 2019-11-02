@@ -13,7 +13,7 @@ protocolOut::protocolOut(QByteArray &str)
 //    sendStream.device()->seek(0);
 //    // помещаем в это начало получившийся размер блока.
 //    sendStream << (quint32)(block.size()) - sizeof(quint32);
-    quint32 packageSize = (quint32)str.length();
+    quint32 packageSize = quint32(str.length());
     QDataStream stream(&block, QIODevice::ReadWrite);
     stream << packageSize;
     stream << str;
