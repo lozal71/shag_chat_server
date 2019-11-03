@@ -21,6 +21,7 @@ SOURCES += \
     mainwindow.cpp \
     protocol_in.cpp \
     protocol_out.cpp \
+    reciprocitydb.cpp \
     session.cpp
 
 HEADERS += \
@@ -28,6 +29,7 @@ HEADERS += \
     mainwindow.h \
     protocol_in.h \
     protocol_out.h \
+    reciprocitydb.h \
     session.h
 
 FORMS += \

@@ -19,11 +19,13 @@ public:
 private:
     Ui::MainWindow *ui;
     chatServer* server;
-    session *sessionServer;
-private:
+    session *sessionClient;
+    reciprocityDB *dbChat;
+    void connectServerUI();
     void netError(const QString& text);
     void netSuccess();
-    void logSessionClosed();
+    void logSessionClosed(int id);
     void logConnectDb();
+    void logServer(QString sParam);
 };
 #endif // MAINWINDOW_H

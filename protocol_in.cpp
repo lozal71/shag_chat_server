@@ -1,68 +1,57 @@
 #include "protocol_in.h"
 
-
-protocolIn::protocolIn(QTcpSocket *socket)
-{
-    if (socket->bytesAvailable()< 4){
-        codeCommand = ErrorMessage;
-    }
-    else{
-        QByteArray mess = getMessage(socket);
-        QString jsonStr(mess);
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr.toUtf8());
-        QJsonObject jsonObj = jsonDoc.object();
-        codeCommand = setCodeCommand(jsonObj.value("codeCommand").toInt());
-        jsonDataClient = jsonObj.value("joDataInput").toObject();
-//        qDebug() << "jsonDataClient" << jsonDataClient;
-    }
+protocolIn::protocolIn(){
+    flag_error = false;
 }
 
-setCodeCommand protocolIn::getCode()
+ QJsonDocument protocolIn::receiveJSONdoc(QTcpSocket *socket)
 {
-    return codeCommand;
-}
-
-QString protocolIn::getLoginClient()
-{
-    return jsonDataClient.value("login").toString();
-}
-
-QString protocolIn::getPassClient()
-{
-    return jsonDataClient.value("pass").toString();
-}
-
-QByteArray protocolIn::getMessage(QTcpSocket *socket)
-{
-    quint32 packageSize; // размер приходящего сообщения
-    quint32 buffer_length = 0;
-    qint64 bytes_in_socket = 0;
-    QByteArray buffer;
-    buffer = socket->read(4); // считываем 4 байта
-    QDataStream stream(buffer);
-    stream >> packageSize; // получаем размер приходящего сообщения
-    qDebug() << "packageSize " << packageSize;
-    packageSize+=4;
-    buffer.clear();
-    buffer_length = quint32(buffer.length());
-    bytes_in_socket = socket->bytesAvailable();
-    // пока не получены все байты сообщения
-    while (true) {
-        // если число доступных байт в сокете меньше или равно, чем ожидаемый остаток
-        if (bytes_in_socket <= packageSize - buffer_length){
-            buffer.append(socket->readAll()); // читаем из буфера все, что есть
-            //qDebug() << "buffer в цикле  " << buffer;
-        }
-        else  {
-                // читаем только остаток
-                buffer.append(socket->read(packageSize - buffer_length));
+    QJsonDocument jdTemp;
+    flag_error = false;
+    // если в сокете меньше, чем 4 байта
+    if (socket->bytesAvailable() < 4){
+        flag_error = true;
+     }
+    else
+    {
+        quint32 packageSize; // размер пришедшего сообщения
+        quint32 baBufferLength = 0; // размер буфера
+        qint64 bytesInSocket = 0;  // число байтов в сокете
+        QByteArray baBuffer;
+        baBuffer = socket->read(4); // считываем 4 байта
+        QDataStream stream(baBuffer); // назначаем baBuffer получателем данных стрима
+        stream >> packageSize; // считываем размер пришедшего сообщения
+        //qDebug() << "packageSize " << packageSize;
+        packageSize+=4; // прибавляем 4 байта, чтобы отсечь длину сообщения от данных
+        baBuffer.clear();
+//        baBufferLength = quint32(baBuffer.length());
+        // узнаем сколько сейчас доступно байт в сокете
+        bytesInSocket = socket->bytesAvailable();
+        // пока не получены все байты сообщения
+        while (true) {
+            // если число доступных байт в сокете меньше или равно, чем ожидаемый остаток
+            if (bytesInSocket <= packageSize - baBufferLength){
+                baBuffer.append(socket->readAll()); // читаем из буфера все, что есть
+                //qDebug() << "buffer в цикле  " << buffer;
             }
-        buffer_length += quint32(buffer.length());
-        bytes_in_socket = socket->bytesAvailable();
-        if (buffer_length == packageSize) break;
+            else  {
+                    // читаем только остаток
+                    baBuffer.append(socket->read(packageSize - baBufferLength));
+                }
+            baBufferLength += quint32(baBuffer.length());
+            bytesInSocket = socket->bytesAvailable();
+            if (baBufferLength == packageSize) break;
+        }
+        baBuffer.remove(0, 4); // отсекаем длину сообщения
+        //qDebug() << "buffer в конце " << buffer;
+        QString sBuffer(baBuffer);
+        jdTemp = QJsonDocument::fromJson(sBuffer.toUtf8());
+//         qDebug() << "jdTemp " <<jdTemp;
     }
-    buffer.remove(0, 4);
-    //qDebug() << "buffer в конце " << buffer;
+    return jdTemp;
+ }
 
-    return buffer;
-}
+ bool protocolIn::isError()
+ {
+     return flag_error;
+ }

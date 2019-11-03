@@ -1,35 +1,41 @@
 #ifndef SESSION_H
 #define SESSION_H
-#include <QDebug>
+
 #include <QTcpSocket>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QSqlDatabase>
+#include <QThread>
+#include <QJsonObject>
 #include "protocol_in.h"
 #include "protocol_out.h"
-#include <QThread>
-#include <QList>
-#include <QJsonArray>
+#include "reciprocitydb.h"
+
+enum setCodeCommand {Auth = 1};
 
 class session: public QObject
 {
     Q_OBJECT
 public:
+    session();
+    ~session();
     session(QTcpSocket *socket);
-    int getID();
+    int getIdClient();
 private:
     QTcpSocket *socketSession;
     setCodeCommand codeCommand;
+
     QString login;
     QString pass;
-    int id;
-    void commandHandler();
-    QJsonObject readFromDB();
-    QJsonArray toJson(const QList<int> & list);
-
+    protocolIn *in;
+    protocolOut *out;
+    reciprocityDB *sessionDB;
+    QVariantMap mapRooms;
+    int idClient;
+    void readQuery();
+    void writeResponse(QVariantMap mapParam);
 signals:
     void connectClosed();
-    void sessionClosed();
+    void sessionClosed(int id);
+    void logQueryReaded(QString sParam);
+    void queryReaded(QVariantMap mapParam);
 };
 
 #endif // SESSION_H

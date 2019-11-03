@@ -1,16 +1,17 @@
 #ifndef PROTOCOLOUT_H
 #define PROTOCOLOUT_H
 #include <QDataStream>
-
+#include <QDebug>
+#include <QJsonDocument>
 
 class protocolOut: public QObject
 {
 public:
     protocolOut();
-    protocolOut(QByteArray &str);
-    QByteArray getMessageToClient();
+    QByteArray getPackage();
+    void setPackage(QJsonDocument jdParam);
 private:
-    QByteArray block;
+    QByteArray baPackage;
 };
 
 #endif // PROTOCOLOUT_H

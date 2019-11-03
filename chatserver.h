@@ -3,8 +3,7 @@
 #include <QTcpServer>
 #include <QDebug>
 #include <QList>
-#include <QDir>
-#include <QFile>
+
 #include "session.h"
 
 class chatServer: public QObject
@@ -12,21 +11,22 @@ class chatServer: public QObject
     Q_OBJECT
 public:
     chatServer();
+    ~chatServer();
     void serverStart();
-    QSqlDatabase dbChat;
+    //QSqlDatabase chatDB;
 private:
     QTcpServer *serverChat;
     QList<session*> sessionPull;
-    QSqlDatabase dbServer;
+    reciprocityDB *db;
     void newClient();
     void removeSession();
-    void connectChatToDB();
+    //void connectChatToDB();
 
 signals:
     void serverError(const QString& text);
     void serverStarted();
-    void oneSessionClosed();
-    void dbConnected();
+    void oneSessionClosed(int id);
+//    void dbConnected();
 };
 
 #endif // CHATSERVER_H

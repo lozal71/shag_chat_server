@@ -20,6 +20,9 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="pbStartServer">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>140</x>
@@ -49,7 +52,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>27</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>
