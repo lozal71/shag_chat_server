@@ -16,16 +16,17 @@ public:
     //QSqlDatabase chatDB;
 private:
     QTcpServer *serverChat;
-    QList<session*> sessionPull;
+    QList<session*> sessionList;
     reciprocityDB *db;
     void newClient();
     void removeSession();
-    //void connectChatToDB();
+    void setConnectServer();
 
 signals:
     void serverError(const QString& text);
-    void serverStarted();
-    void oneSessionClosed(int id);
+    void serverStarted(const QString& text);
+    void sessionClosedForUI(const QString& text);
+    void sessionClosedForDB(int id);
 //    void dbConnected();
 };
 

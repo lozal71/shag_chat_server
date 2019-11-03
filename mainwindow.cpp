@@ -10,37 +10,39 @@ MainWindow::MainWindow(QWidget *parent)
     sessionClient = new session();
     dbChat = new reciprocityDB();
     ui->pbStartServer->setEnabled(true);
-    connectServerUI();
+    setConnectServerUI();
 }
 
 MainWindow::~MainWindow()
 {
-    delete server;
-    delete sessionClient;
-    delete  dbChat;
+//    delete server;
+//    delete sessionClient;
+//    delete dbChat;
     delete ui;
 }
 
-void MainWindow::connectServerUI()
+void MainWindow::setConnectServerUI()
 {
     // нажимаем кнопку - запускаем сервер
     connect(ui->pbStartServer, &QPushButton::clicked,
             server, &chatServer::serverStart);
     // запуск сервера
     connect (server, &chatServer::serverStarted,
-             this, &MainWindow::netSuccess);
-    // закрытие сессии
-    connect(server, &chatServer::oneSessionClosed,
-            this, &MainWindow::logSessionClosed);
-    // связь с БД
-    connect(dbChat, &reciprocityDB::dbConnected,
-            this, &MainWindow::logConnectDb);
+             this, &MainWindow::logServer);
+    // закрытие одной сессии
+    connect(server, &chatServer::sessionClosedForUI,
+            this, &MainWindow::logServer);
     // ошибка на сервере
     connect(server, &chatServer::serverError,
             this, &MainWindow::netError);
 
+
+    // логирование чтения запроса
     connect (sessionClient, &session::logQueryReaded,
              this, &MainWindow::logServer);
+    // логирование связи с БД
+    connect(dbChat, &reciprocityDB::dbConnected,
+            this, &MainWindow::logServer);
 }
 
 void MainWindow::netError(const QString &text)
@@ -49,26 +51,15 @@ void MainWindow::netError(const QString &text)
     ui->teStatus->insertPlainText(text + "\n");
 }
 
-void MainWindow::netSuccess()
+void MainWindow::netSuccess(const QString& text)
 {
     ui->pbStartServer->setEnabled(false);
-    ui->teStatus->insertPlainText("server start success\n");
+    ui->teStatus->insertPlainText(text);
  }
 
-void MainWindow::logSessionClosed(int id)
+void MainWindow::logServer(const QString& text)
 {
-    ui->teStatus->insertPlainText("session "+QString::number(id) +" closed\n");
-
-}
-
-void MainWindow::logConnectDb()
-{
-    ui->teStatus->insertPlainText("connect to DB\n");
-}
-
-void MainWindow::logServer(QString sParam)
-{
-    ui->teStatus->insertPlainText(sParam);
+    ui->teStatus->insertPlainText(text);
 }
 
 

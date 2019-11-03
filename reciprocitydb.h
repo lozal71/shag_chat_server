@@ -18,8 +18,9 @@ public:
     void setStatusONline(int id);
     void setStatusOFFline(int id);
     void connectChatToDB();
+    QVariantMap setRooms(int id);
 signals:
-     void dbConnected();
+     void dbConnected(const QString &text);
 };
 
 #endif // RECIPROCITYDB_H

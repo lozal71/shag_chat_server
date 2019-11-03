@@ -12,33 +12,38 @@ session::session(QTcpSocket *socket)
     in = new protocolIn();
     out = new protocolOut();
     sessionDB = new reciprocityDB();
+    setConnectSession();
+
+}
+
+session::~session(){
+//    delete in;
+//    delete out;
+//    delete sessionDB;
+}
+
+void session::setConnectSession()
+{
+    // в сокете появились новые данные -
+    //читаем пришедший запрос и пишем ответ
     connect (socketSession, &QTcpSocket::readyRead,
-             this,&session::readQuery);
-
-//    connect( this, &session::sessionClosed,
-//             sessionDB, &reciprocityDB::setStatusOFFline);
-
+             this,&session::readQueryWriteResponse);
     connect(socketSession, &QTcpSocket::disconnected,
             this, &session::connectClosed);
 }
 
-session::~session(){
-    delete in;
-    delete out;
-    delete sessionDB;
-}
-
 int session::getIdClient()
 {
-    return idClient;
+    return client.id;
 }
 
 
-void session::readQuery()
+void session::readQueryWriteResponse()
 {
-    // получаем JSON-документ из сокета
+    QString sLogText;
+    setCodeCommand codeCommand;
+    // получаем JSON-документ из сокета и преобразуем его в QVariantMap
     QJsonDocument jdTemp = in->receiveJSONdoc(socketSession);
-    QString sTemp;
     QJsonObject joTemp = jdTemp.object();
     //qDebug() << "joTemp" << joTemp;
     QVariantMap mapCommand =joTemp.toVariantMap();
@@ -49,34 +54,32 @@ void session::readQuery()
     codeCommand = setCodeCommand(mapCommand["codeCommand"].toInt());
 
     if (in->isError()){
-         sTemp = "Problem: error massage";
+          sLogText = "Problem: error massage";
     }
     else {
+
         switch (codeCommand) {
             case setCodeCommand::Auth:
             {
-                sTemp = "query auth for ";
+                sLogText = "query auth for ";
                 QVariantMap mapData =  mapCommand["joDataInput"].toMap();
-//                joTemp.insert("codeCommand", setCodeCommand::Auth);
-                login =mapData["login"].toString();
-                pass = mapData["pass"].toString();
-                //joTemp.insert("joDataInput", readFromDB());
-                sTemp += login + "," + pass + "\n";
+                QString login = mapData["login"].toString();
+                QString pass = mapData["pass"].toString();
+                sLogText += login + "," + pass + "\n";
+                // получаем ответ из БД
                 mapResponse = sessionDB->readAuth(login, pass);
-                idClient = mapResponse["id"].toInt();
-                mapRooms = mapResponse["rooms"].toMap();
+                client.id = mapResponse["id"].toInt();
+                client.mapRooms = mapResponse["rooms"].toMap();
             }
             break;
         }
     }
-    emit logQueryReaded(sTemp);
+    emit logQueryReaded(sLogText);
     mapCommand["joDataInput"]=mapResponse;
-    writeResponse(mapCommand);
-}
-
-void session::writeResponse(QVariantMap mapParam)
-{
-    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapParam);
+    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }
+
+
+

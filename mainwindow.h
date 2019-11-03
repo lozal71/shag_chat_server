@@ -21,11 +21,9 @@ private:
     chatServer* server;
     session *sessionClient;
     reciprocityDB *dbChat;
-    void connectServerUI();
+    void setConnectServerUI();
     void netError(const QString& text);
-    void netSuccess();
-    void logSessionClosed(int id);
-    void logConnectDb();
-    void logServer(QString sParam);
+    void netSuccess(const QString& text);
+    void logServer(const QString& text);
 };
 #endif // MAINWINDOW_H
