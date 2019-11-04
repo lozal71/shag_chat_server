@@ -88,7 +88,10 @@ void reciprocityDB::connectChatToDB()
 QVariantMap reciprocityDB::setRooms(int id)
 {
     QSqlQuery qRooms;
-    QVariantMap mapRooms;
+    QVariantMap mapRoomsID;
+    QVariantMap mapRoomName;
+    QVariantMap mapRoomMess;
+    QVariantMap mapMess;
     QString qsRooms = "select rooms_users.room_id, rooms.name "
                       "from rooms_users inner join rooms on rooms.id = rooms_users.room_id "
                       "where rooms_users.user_id = %1";
@@ -98,9 +101,47 @@ QVariantMap reciprocityDB::setRooms(int id)
     }
     else{
         qDebug() << "success query select rooms_users.room_id, rooms.name ";
+        int roomID;
+        QString roomName;
+        mapRoomName.clear();
         while (qRooms.next()){
-            mapRooms[qRooms.value(0).toString()] = qRooms.value(1).toString();
+            roomID = qRooms.value(0).toInt();
+            roomName = qRooms.value(1).toString();
+            mapRoomName[roomName] = setMessages(roomID);
+            mapRoomsID[QString::number(roomID)] = mapRoomName;
+            mapRoomName.clear();
         }
     }
-    return mapRooms;
+    qDebug() << "mapRoomsID" <<  mapRoomsID;
+    return mapRoomsID;
+}
+
+QVariantMap reciprocityDB::setMessages(int roomID)
+{
+    QSqlQuery qMessage;
+    QVariantMap mapMessage;
+    QVariantMap mapSenderMessage;
+    QString messTime;
+    QString senderName;
+    QString textMess;
+    QString qsMessage = "select messages.time_sent, users.name, messages.text "
+                        "from messages "
+                        "inner join users on users.id = messages.sender_id "
+                        "where messages.room_id = %1 ";
+    if (!qMessage.exec(qsMessage.arg(roomID))){
+        qDebug() << "query select messages error" << qMessage.lastError();
+    }
+    else{
+        mapSenderMessage.clear();
+        while (qMessage.next()){
+            messTime = qMessage.value(0).toString();
+            senderName = qMessage.value(1).toString();
+            textMess = qMessage.value(2).toString();
+            mapSenderMessage[senderName] = textMess;
+            mapMessage[messTime] = mapSenderMessage;
+            mapSenderMessage.clear();
+        }
+    }
+    qDebug() << "mapMessage" <<  mapMessage;
+    return mapMessage;
 }

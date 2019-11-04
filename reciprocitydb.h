@@ -7,6 +7,7 @@
 #include <QSqlDatabase>
 #include <QDebug>
 #include <QVariantMap>
+#include <QList>
 
 class reciprocityDB: public QObject
 {
@@ -19,6 +20,7 @@ public:
     void setStatusOFFline(int id);
     void connectChatToDB();
     QVariantMap setRooms(int id);
+    QVariantMap setMessages(int roomID);
 signals:
      void dbConnected(const QString &text);
 };

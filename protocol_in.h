@@ -4,6 +4,7 @@
 #include <QTcpSocket>
 #include <QJsonDocument>
 
+
 //enum setCodeCommand {Auth};
 
 class protocolIn: public QObject
