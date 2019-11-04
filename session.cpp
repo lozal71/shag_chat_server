@@ -17,9 +17,9 @@ session::session(QTcpSocket *socket)
 }
 
 session::~session(){
-//    delete in;
-//    delete out;
-//    delete sessionDB;
+    delete in;
+    delete out;
+    delete sessionDB;
 }
 
 void session::setConnectSession()

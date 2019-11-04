@@ -25,6 +25,7 @@ private:
     QVariantMap setMessages(int roomID);
 signals:
      void dbConnected(const QString &text);
+     void test();
 };
 
 #endif // RECIPROCITYDB_H

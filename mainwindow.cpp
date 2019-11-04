@@ -1,3 +1,4 @@
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -6,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    server = new chatServer();
+    server = new chatServer(this, SLOT(logServer(QString)));
     sessionClient = new session();
     dbChat = new reciprocityDB();
     ui->pbStartServer->setEnabled(true);
@@ -15,9 +16,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-//    delete server;
-//    delete sessionClient;
-//    delete dbChat;
+    delete server;
+    delete sessionClient;
+    delete dbChat;
     delete ui;
 }
 
@@ -26,17 +27,11 @@ void MainWindow::setConnectServerUI()
     // нажимаем кнопку - запускаем сервер
     connect(ui->pbStartServer, &QPushButton::clicked,
             server, &chatServer::serverStart);
-    // запуск сервера
-    connect (server, &chatServer::serverStarted,
-             this, &MainWindow::logServer);
-    // закрытие одной сессии
-    connect(server, &chatServer::sessionClosedForUI,
-            this, &MainWindow::logServer);
-    // ошибка на сервере
-    connect(server, &chatServer::serverError,
-            this, &MainWindow::netError);
-
-
+    // логирование действий на сервере
+//    connect (server, &chatServer::logToMainWindow,
+//             this, &MainWindow::logServer);
+    connect(server, &chatServer::serverStarted,
+            this,&MainWindow::netSuccess);
     // логирование чтения запроса
     connect (sessionClient, &session::logQueryReaded,
              this, &MainWindow::logServer);
@@ -45,21 +40,20 @@ void MainWindow::setConnectServerUI()
             this, &MainWindow::logServer);
 }
 
-void MainWindow::netError(const QString &text)
-{
-    ui->pbStartServer->setEnabled(true);
-    ui->teStatus->insertPlainText(text + "\n");
-}
+//void MainWindow::netError(const QString &text)
+//{
+//    ui->pbStartServer->setEnabled(true);
+//    ui->teStatus->insertPlainText(text + "\n");
+//}
 
-void MainWindow::netSuccess(const QString& text)
+void MainWindow::netSuccess()
 {
     ui->pbStartServer->setEnabled(false);
-    ui->teStatus->insertPlainText(text);
+    //ui->teStatus->insertPlainText(text);
  }
 
 void MainWindow::logServer(const QString& text)
 {
     ui->teStatus->insertPlainText(text);
 }
-
 

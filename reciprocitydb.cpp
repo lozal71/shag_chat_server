@@ -2,7 +2,6 @@
 
 reciprocityDB::reciprocityDB()
 {
-
 }
 
 QVariantMap reciprocityDB::readAuth(QString login, QString pass)
@@ -75,6 +74,7 @@ void reciprocityDB::setStatusRead(int id)
 
 void reciprocityDB::connectChatToDB()
 {
+    emit test();
     chatDB = QSqlDatabase::addDatabase("QSQLITE");
     QString pathBIN = QDir::currentPath();
     QString pathDB = QFileInfo(pathBIN).path();
@@ -89,6 +89,8 @@ void reciprocityDB::connectChatToDB()
     else
     {
         sTemp = "connect to db \n";
+
+        qDebug() << "emit dbConnected(sTemp);";
         emit dbConnected(sTemp);
     }
     qDebug() << sTemp;

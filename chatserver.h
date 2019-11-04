@@ -10,7 +10,7 @@ class chatServer: public QObject
 {
     Q_OBJECT
 public:
-    chatServer();
+    chatServer(QObject* mainWindow, const char *logSlot);
     ~chatServer();
     void serverStart();
     //QSqlDatabase chatDB;
@@ -22,10 +22,14 @@ private:
     void removeSession();
     void setConnectServer();
 
+    QObject *mainWindow;
+    const char* logSlot;
+
 signals:
-    void serverError(const QString& text);
-    void serverStarted(const QString& text);
-    void sessionClosedForUI(const QString& text);
+//    void serverError(const QString& text);
+    void serverStarted();
+//    void sessionClosedForUI(const QString& text);
+    void logToMainWindow(const QString& massage);
     void sessionClosedForDB(int id);
 //    void dbConnected();
 };

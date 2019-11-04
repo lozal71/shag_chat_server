@@ -22,8 +22,11 @@ private:
     session *sessionClient;
     reciprocityDB *dbChat;
     void setConnectServerUI();
-    void netError(const QString& text);
-    void netSuccess(const QString& text);
+//    void netError(const QString& text);
+    void netSuccess();
+
+
+public slots:
     void logServer(const QString& text);
 };
 #endif // MAINWINDOW_H
