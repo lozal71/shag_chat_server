@@ -13,12 +13,14 @@ class reciprocityDB: public QObject
 {
     Q_OBJECT
 public:
-    QSqlDatabase chatDB;
     reciprocityDB();
+    QSqlDatabase chatDB;
     QVariantMap readAuth(QString login, QString pass);
-    void setStatusONline(int id);
-    void setStatusOFFline(int id);
     void connectChatToDB();
+    void setStatusOFFline(int id);
+private:
+    void setStatusONline(int id);
+    void setStatusRead(int id);
     QVariantMap setRooms(int id);
     QVariantMap setMessages(int roomID);
 signals:

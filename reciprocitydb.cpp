@@ -64,6 +64,15 @@ void reciprocityDB::setStatusOFFline(int id)
     }
 }
 
+void reciprocityDB::setStatusRead(int id)
+{
+    QSqlQuery qSetStatusRead;
+    QString qsSetStatusRead = "UPDATE messages SET status = 2  WHERE id = %1";
+    if (!qSetStatusRead.exec(qsSetStatusRead.arg(id))){
+         qDebug() << "query UPDATE error" << qSetStatusRead.lastError();
+    }
+}
+
 void reciprocityDB::connectChatToDB()
 {
     chatDB = QSqlDatabase::addDatabase("QSQLITE");
@@ -124,22 +133,25 @@ QVariantMap reciprocityDB::setMessages(int roomID)
     QString messTime;
     QString senderName;
     QString textMess;
-    QString qsMessage = "select messages.time_sent, users.name, messages.text "
+    int messID;
+    QString qsMessage = "select messages.id, messages.time_sent, users.name, messages.text "
                         "from messages "
                         "inner join users on users.id = messages.sender_id "
-                        "where messages.room_id = %1 ";
+                        "where messages.room_id = %1 and messages.status = 1 ";
     if (!qMessage.exec(qsMessage.arg(roomID))){
         qDebug() << "query select messages error" << qMessage.lastError();
     }
     else{
         mapSenderMessage.clear();
         while (qMessage.next()){
-            messTime = qMessage.value(0).toString();
-            senderName = qMessage.value(1).toString();
-            textMess = qMessage.value(2).toString();
+            messID = qMessage.value(0).toInt();
+            messTime = qMessage.value(1).toString();
+            senderName = qMessage.value(2).toString();
+            textMess = qMessage.value(3).toString();
             mapSenderMessage[senderName] = textMess;
             mapMessage[messTime] = mapSenderMessage;
             mapSenderMessage.clear();
+            setStatusRead(messID);
         }
     }
     qDebug() << "mapMessage" <<  mapMessage;
