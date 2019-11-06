@@ -11,7 +11,7 @@ QVariantMap reciprocityDB::readAuth(QString login, QString pass)
     QSqlQuery qAuth;
     // запрашиваем id, name по логину и паролю
     QString qsAuth = "select id,name from users where users.login='%1' and users.password='%2'";
-    qDebug() << "qsAuth" << qsAuth.arg(login).arg(pass);
+    //qDebug() << "qsAuth" << qsAuth.arg(login).arg(pass);
     if (!qAuth.exec(qsAuth.arg(login).arg(pass)))
     {
             qDebug() << "query SELECT error" << qAuth.lastError();
@@ -29,6 +29,7 @@ QVariantMap reciprocityDB::readAuth(QString login, QString pass)
                 mapResponseDB["name"] = qAuth.value(1).toString();
                 // меняем статус клиента на он-лайн
                 setStatusONline(id);
+                setCurrentTime(id);
                 // определяем комнаты, в которых участвует клиент
                 mapResponseDB["rooms"] = setRooms(id);
              }
@@ -61,6 +62,22 @@ void reciprocityDB::setStatusOFFline(int id)
     {
         qDebug() << "query UPDATE error" << qSetStatus.lastError();
     }
+    qsSetStatus = "SELECT time_session FROM users WHERE id = %1";
+    if (!qSetStatus.exec(qsSetStatus.arg(id)))
+    {
+        qDebug() << "SELECT time_session FROM users" << qSetStatus.lastError();
+    }
+    else {
+        QString td;
+        while (qSetStatus.next()){
+            td = qSetStatus.value(0).toString();
+        }
+            qDebug() << "td" << td;
+        qsSetStatus = "UPDATE users SET time_last_session = '%1'  WHERE id = %2";
+        if (!qSetStatus.exec(qsSetStatus.arg(td).arg(id))){
+            qDebug() << "query UPDATE users SET time_session " << qSetStatus.lastError();
+        }
+    }
 }
 
 void reciprocityDB::setStatusRead(int id)
@@ -69,6 +86,20 @@ void reciprocityDB::setStatusRead(int id)
     QString qsSetStatusRead = "UPDATE messages SET status = 2  WHERE id = %1";
     if (!qSetStatusRead.exec(qsSetStatusRead.arg(id))){
          qDebug() << "query UPDATE error" << qSetStatusRead.lastError();
+    }
+}
+
+void reciprocityDB::setCurrentTime(int id)
+{
+    QDateTime td;
+    td = td.currentDateTime();
+    //qDebug() << "td" << td;
+    QSqlQuery qSetTime;
+    QString qsSetTime = "UPDATE users SET time_session = '%1' WHERE id = %2";
+    //qDebug() << "qsSetTime.arg(td.toString(\"hh:mm:ss\")).arg(id) "
+      //       << qsSetTime.arg(td.toString("hh:mm:ss")).arg(id);
+    if (!qSetTime.exec(qsSetTime.arg(td.toString("hh:mm:ss")).arg(id))){
+         qDebug() << "query UPDATE users SET time_session " << qSetTime.lastError();
     }
 }
 
@@ -90,7 +121,7 @@ void reciprocityDB::connectChatToDB()
     {
         sTemp = "connect to db \n";
 
-        qDebug() << "emit dbConnected(sTemp);";
+        //qDebug() << "emit dbConnected(sTemp);";
         emit dbConnected(sTemp);
     }
     qDebug() << sTemp;
@@ -106,7 +137,7 @@ QVariantMap reciprocityDB::setRooms(int id)
     QString qsRooms = "select rooms_users.room_id, rooms.name "
                       "from rooms_users inner join rooms on rooms.id = rooms_users.room_id "
                       "where rooms_users.user_id = %1";
-    qDebug() << "qsRooms" << qsRooms.arg(id);
+    //qDebug() << "qsRooms" << qsRooms.arg(id);
     if (!qRooms.exec(qsRooms.arg(id))){
         qDebug() << "query select room_id error" << qRooms.lastError();
     }
@@ -123,7 +154,7 @@ QVariantMap reciprocityDB::setRooms(int id)
             mapRoomName.clear();
         }
     }
-    qDebug() << "mapRoomsID" <<  mapRoomsID;
+    //qDebug() << "mapRoomsID" <<  mapRoomsID;
     return mapRoomsID;
 }
 
@@ -135,27 +166,34 @@ QVariantMap reciprocityDB::setMessages(int roomID)
     QString messTime;
     QString senderName;
     QString textMess;
-    int messID;
+    //QDateTime td;
+    //td = td.currentDateTime();
+    //int messID;
     QString qsMessage = "select messages.id, messages.time_sent, users.name, messages.text "
-                        "from messages "
-                        "inner join users on users.id = messages.sender_id "
-                        "where messages.room_id = %1 and messages.status = 1 ";
-    if (!qMessage.exec(qsMessage.arg(roomID))){
+            "from messages "
+            "inner join users on users.id = messages.sender_id "
+            "where messages.room_id = %1 "
+            "and datetime(messages.time_sent) >= datetime(users.time_last_session)";
+    qDebug() << "qsMessage" << qsMessage.arg(roomID);
+    if (!qMessage.exec(qsMessage.arg(roomID)))
+    {
         qDebug() << "query select messages error" << qMessage.lastError();
     }
     else{
         mapSenderMessage.clear();
         while (qMessage.next()){
-            messID = qMessage.value(0).toInt();
+
+            //messID = qMessage.value(0).toInt();
             messTime = qMessage.value(1).toString();
             senderName = qMessage.value(2).toString();
             textMess = qMessage.value(3).toString();
             mapSenderMessage[senderName] = textMess;
             mapMessage[messTime] = mapSenderMessage;
             mapSenderMessage.clear();
-            setStatusRead(messID);
+            //setStatusRead(messID);
+
         }
     }
-    qDebug() << "mapMessage" <<  mapMessage;
+    //qDebug() << "mapMessage" <<  mapMessage;
     return mapMessage;
 }

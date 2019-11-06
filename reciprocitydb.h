@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QVariantMap>
 #include <QList>
+#include <QDateTime>
 
 class reciprocityDB: public QObject
 {
@@ -19,8 +20,10 @@ public:
     void connectChatToDB();
     void setStatusOFFline(int id);
 private:
+
     void setStatusONline(int id);
     void setStatusRead(int id);
+    void setCurrentTime(int id);
     QVariantMap setRooms(int id);
     QVariantMap setMessages(int roomID);
 signals:

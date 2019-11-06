@@ -8,6 +8,7 @@
 #include "protocol_out.h"
 #include "reciprocitydb.h"
 
+
 enum setCodeCommand {Auth = 1};
 
 class session: public QObject

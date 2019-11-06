@@ -16,9 +16,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete server;
-    delete sessionClient;
-    delete dbChat;
+    //delete server;
+    //delete sessionClient;
+    //delete dbChat;
     delete ui;
 }
 
