@@ -19,6 +19,7 @@ public:
     QVariantMap readAuth(QString login, QString pass);
     void connectChatToDB();
     void setStatusOFFline(int id);
+    QVariantMap readMessage(int roomID, int userID, QDateTime td, QString text);
 private:
 
     void setStatusONline(int id);

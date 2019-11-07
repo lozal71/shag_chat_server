@@ -80,6 +80,27 @@ void reciprocityDB::setStatusOFFline(int id)
     }
 }
 
+QVariantMap reciprocityDB::readMessage(int roomID, int userID, QDateTime td, QString text)
+{
+    qDebug() << "td" << td;
+    qDebug() << "userID" << userID;
+    QVariantMap mapResponseDB;
+    QSqlQuery qInsertNewmessage;
+    QString qsInsertNewmessage = "insert into messages (room_id, sender_id, time_sent, text, status) "
+                              "values (%1, %2, '%3', '%4', 1)";
+    qDebug() << "queryInsert" << qsInsertNewmessage.arg(roomID).arg(userID).
+                arg(td.toString("hh:mm:ss")).arg(text);
+    if (!qInsertNewmessage.exec(qsInsertNewmessage.arg(roomID).arg(userID).
+                                arg(td.toString("hh:mm:ss")).arg(text))){
+        qDebug() << "query insert into messages " << qInsertNewmessage.lastError();
+        mapResponseDB["send"] = 0;
+    }
+    else{
+        mapResponseDB["send"] = 1;
+    }
+    return mapResponseDB;
+}
+
 void reciprocityDB::setStatusRead(int id)
 {
     QSqlQuery qSetStatusRead;
@@ -172,8 +193,15 @@ QVariantMap reciprocityDB::setMessages(int roomID)
     QString qsMessage = "select messages.id, messages.time_sent, users.name, messages.text "
             "from messages "
             "inner join users on users.id = messages.sender_id "
-            "where messages.room_id = %1 "
-            "and datetime(messages.time_sent) >= datetime(users.time_last_session)";
+            "where "
+            "messages.room_id = %1 "
+            "and "
+            "CAST(strftime('%s', messages.time_sent)  AS  integer) >= CAST(strftime('%s',  users.time_last_session)  AS  integer)";
+//            "select messages.id, messages.time_sent, users.name, messages.text "
+//            "from messages "
+//            "inner join users on users.id = messages.sender_id "
+//            "where messages.room_id = %1 "
+//            "and datetime(messages.time_sent) >= datetime(users.time_last_session)";
     qDebug() << "qsMessage" << qsMessage.arg(roomID);
     if (!qMessage.exec(qsMessage.arg(roomID)))
     {

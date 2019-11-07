@@ -72,6 +72,18 @@ void session::readQueryWriteResponse()
                 client.mapRooms = mapResponse["rooms"].toMap();
             }
             break;
+            case setCodeCommand::Send:
+            {
+                sLogText = "query send message ";
+                QVariantMap mapData =  mapCommand["joDataInput"].toMap();
+                // получаем ответ из БД
+                qDebug() << "mapData" << mapData;
+                mapResponse = sessionDB->readMessage(mapData["roomID"].toInt(),
+                                                        mapData["userID"].toInt(),
+                                                        mapData["time"].toDateTime(),
+                                                        mapData["text"].toString());
+            }
+            break;
         }
     }
     emit logQueryReaded(sLogText);
