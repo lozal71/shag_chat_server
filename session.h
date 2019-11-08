@@ -26,7 +26,7 @@ private:
     reciprocityDB *sessionDB;
     struct dataClient{
         int id;
-        QVariantMap mapRooms;
+        //QVariantMap mapRooms;
     } client;
     void readQueryWriteResponse();
     void setConnectSession();

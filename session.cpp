@@ -69,7 +69,7 @@ void session::readQueryWriteResponse()
                 // получаем ответ из БД
                 mapResponse = sessionDB->readAuth(login, pass);
                 client.id = mapResponse["id"].toInt();
-                client.mapRooms = mapResponse["rooms"].toMap();
+                //client.mapRooms = mapResponse["rooms"].toMap();
             }
             break;
             case setCodeCommand::Send:
@@ -77,9 +77,9 @@ void session::readQueryWriteResponse()
                 sLogText = "query send message ";
                 QVariantMap mapData =  mapCommand["joDataInput"].toMap();
                 // получаем ответ из БД
-                qDebug() << "mapData" << mapData;
+                //qDebug() << "mapData" << mapData;
                 mapResponse = sessionDB->readMessage(mapData["roomID"].toInt(),
-                                                        mapData["userID"].toInt(),
+                                                        client.id,
                                                         mapData["time"].toDateTime(),
                                                         mapData["text"].toString());
             }
@@ -89,6 +89,7 @@ void session::readQueryWriteResponse()
     emit logQueryReaded(sLogText);
     mapCommand["joDataInput"]=mapResponse;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
+    //qDebug() << "jdResponse" << jdResponse;
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }

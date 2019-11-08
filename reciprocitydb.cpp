@@ -72,7 +72,7 @@ void reciprocityDB::setStatusOFFline(int id)
         while (qSetStatus.next()){
             td = qSetStatus.value(0).toString();
         }
-            qDebug() << "td" << td;
+            //qDebug() << "td" << td;
         qsSetStatus = "UPDATE users SET time_last_session = '%1'  WHERE id = %2";
         if (!qSetStatus.exec(qsSetStatus.arg(td).arg(id))){
             qDebug() << "query UPDATE users SET time_session " << qSetStatus.lastError();
@@ -82,21 +82,21 @@ void reciprocityDB::setStatusOFFline(int id)
 
 QVariantMap reciprocityDB::readMessage(int roomID, int userID, QDateTime td, QString text)
 {
-    qDebug() << "td" << td;
-    qDebug() << "userID" << userID;
+   // qDebug() << "td" << td;
+    //qDebug() << "userID" << userID;
     QVariantMap mapResponseDB;
     QSqlQuery qInsertNewmessage;
     QString qsInsertNewmessage = "insert into messages (room_id, sender_id, time_sent, text, status) "
                               "values (%1, %2, '%3', '%4', 1)";
-    qDebug() << "queryInsert" << qsInsertNewmessage.arg(roomID).arg(userID).
-                arg(td.toString("hh:mm:ss")).arg(text);
+    //qDebug() << "queryInsert" << qsInsertNewmessage.arg(roomID).arg(userID).
+                //arg(td.toString("hh:mm:ss")).arg(text);
     if (!qInsertNewmessage.exec(qsInsertNewmessage.arg(roomID).arg(userID).
                                 arg(td.toString("hh:mm:ss")).arg(text))){
         qDebug() << "query insert into messages " << qInsertNewmessage.lastError();
-        mapResponseDB["send"] = 0;
+        mapResponseDB["sendResult"] = 0;
     }
     else{
-        mapResponseDB["send"] = 1;
+        mapResponseDB["sendResult"] = 1;
     }
     return mapResponseDB;
 }
@@ -202,7 +202,7 @@ QVariantMap reciprocityDB::setMessages(int roomID)
 //            "inner join users on users.id = messages.sender_id "
 //            "where messages.room_id = %1 "
 //            "and datetime(messages.time_sent) >= datetime(users.time_last_session)";
-    qDebug() << "qsMessage" << qsMessage.arg(roomID);
+    //qDebug() << "qsMessage" << qsMessage.arg(roomID);
     if (!qMessage.exec(qsMessage.arg(roomID)))
     {
         qDebug() << "query select messages error" << qMessage.lastError();
