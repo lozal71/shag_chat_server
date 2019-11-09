@@ -80,7 +80,6 @@ void session::readQueryWriteResponse()
                 //qDebug() << "mapData" << mapData;
                 mapResponse = sessionDB->readMessage(mapData["roomID"].toInt(),
                                                         client.id,
-                                                        mapData["time"].toDateTime(),
                                                         mapData["text"].toString());
             }
             break;

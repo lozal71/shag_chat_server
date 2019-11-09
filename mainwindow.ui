@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>windowServer</class>
+ <widget class="QMainWindow" name="windowServer">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>395</width>
+    <height>286</height>
    </rect>
   </property>
   <property name="font">
@@ -25,8 +25,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>50</y>
+      <x>20</x>
+      <y>20</y>
       <width>331</width>
       <height>23</height>
      </rect>
@@ -38,8 +38,8 @@
    <widget class="QTextEdit" name="teStatus">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>130</y>
+      <x>20</x>
+      <y>60</y>
       <width>341</width>
       <height>161</height>
      </rect>
@@ -51,7 +51,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>395</width>
      <height>20</height>
     </rect>
    </property>

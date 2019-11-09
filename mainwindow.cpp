@@ -2,9 +2,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+windowServer::windowServer(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::windowServer)
 {
     ui->setupUi(this);
     server = new chatServer(this, SLOT(logServer(QString)));
@@ -14,14 +14,14 @@ MainWindow::MainWindow(QWidget *parent)
     setConnectServerUI();
 }
 
-MainWindow::~MainWindow()
+windowServer::~windowServer()
 {
     delete server;
     delete dbChat;
     delete ui;
 }
 
-void MainWindow::setConnectServerUI()
+void windowServer::setConnectServerUI()
 {
     // нажимаем кнопку - запускаем сервер
     connect(ui->pbStartServer, &QPushButton::clicked,
@@ -30,13 +30,13 @@ void MainWindow::setConnectServerUI()
 //    connect (server, &chatServer::logToMainWindow,
 //             this, &MainWindow::logServer);
     connect(server, &chatServer::serverStarted,
-            this,&MainWindow::netSuccess);
+            this,&windowServer::netSuccess);
     // логирование чтения запроса
     connect (sessionClient, &session::logQueryReaded,
-             this, &MainWindow::logServer);
+             this, &windowServer::logServer);
     // логирование связи с БД
     connect(dbChat, &reciprocityDB::dbConnected,
-            this, &MainWindow::logServer);
+            this, &windowServer::logServer);
 }
 
 //void MainWindow::netError(const QString &text)
@@ -45,13 +45,13 @@ void MainWindow::setConnectServerUI()
 //    ui->teStatus->insertPlainText(text + "\n");
 //}
 
-void MainWindow::netSuccess()
+void windowServer::netSuccess()
 {
     ui->pbStartServer->setEnabled(false);
     //ui->teStatus->insertPlainText(text);
  }
 
-void MainWindow::logServer(const QString& text)
+void windowServer::logServer(const QString& text)
 {
     ui->teStatus->insertPlainText(text);
 }
