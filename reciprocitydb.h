@@ -7,8 +7,6 @@
 //#include <QSqlDatabase>
 //#include <QDebug>
 #include <QVariantMap>
-#include <QList>
-#include <QDateTime>
 #include "querypull.h"
 
 class reciprocityDB: public QObject
@@ -17,7 +15,7 @@ class reciprocityDB: public QObject
 public:
     reciprocityDB();
     QSqlDatabase chatDB;
-    QVariantMap readAuth(QString login, QString pass);
+    QVariantMap mapResponseAuth(QString login, QString pass);
     void connectChatToDB();
     void setStatusOFFline(int id);
     QVariantMap readMessage(int roomID, int userID, QString text);
@@ -25,10 +23,10 @@ private:
 //    void setStatusONline(int id);
 //    void setStatusRead(int id);
 //    void setCurrentTime(int id);
-    QVariantMap setRooms(int id);
-    QVariantMap setMessages(int roomID);
-signals:
-     void dbConnected(const QString &text);
+    QVariantMap setMapRooms(int id);
+    QVariantMap setMapMessages(int roomID);
+//signals:
+//     void dbConnected(const QString &text);
 
 };
 

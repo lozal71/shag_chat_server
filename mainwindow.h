@@ -5,28 +5,28 @@
 #include "chatserver.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class windowServer; }
+namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class windowServer : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    windowServer(QWidget *parent = nullptr);
-    ~windowServer();
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
 
 private:
-    Ui::windowServer *ui;
+    Ui::MainWindow *ui;
     chatServer* server;
-    session *sessionClient;
-    reciprocityDB *dbChat;
+    //session *sessionClient;
+    //reciprocityDB *dbChat;
     void setConnectServerUI();
 //    void netError(const QString& text);
-    void netSuccess();
+    void buttonStartNotEnable();
 
 
-public slots:
-    void logServer(const QString& text);
+//public slots:
+//    void logServer(const QString& text);
 };
 #endif // MAINWINDOW_H

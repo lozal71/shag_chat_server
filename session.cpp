@@ -67,7 +67,7 @@ void session::readQueryWriteResponse()
                 QString pass = mapData["pass"].toString();
                 sLogText += login + "," + pass + "\n";
                 // получаем ответ из БД
-                mapResponse = sessionDB->readAuth(login, pass);
+                mapResponse = sessionDB->mapResponseAuth(login, pass);
                 client.id = mapResponse["id"].toInt();
                 //client.mapRooms = mapResponse["rooms"].toMap();
             }
@@ -85,12 +85,13 @@ void session::readQueryWriteResponse()
             break;
         }
     }
-    emit logQueryReaded(sLogText);
+    //emit logQueryReaded(sLogText);
     mapCommand["joDataInput"]=mapResponse;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
     //qDebug() << "jdResponse" << jdResponse;
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
+    qDebug() << sLogText;
 }
 
 

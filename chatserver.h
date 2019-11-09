@@ -10,7 +10,8 @@ class chatServer: public QObject
 {
     Q_OBJECT
 public:
-    chatServer(QObject* mainWindow, const char *logSlot);
+//    chatServer(QObject* mainWindow, const char *logSlot);
+    chatServer();
     ~chatServer();
     void serverStart();
     //QSqlDatabase chatDB;

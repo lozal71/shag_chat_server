@@ -15,7 +15,8 @@ public:
     QSqlQuery userOnLine(int id);
     QSqlQuery userOffLine(int id);
     QSqlQuery selectRooms(int id);
-    QSqlQuery selectMessages(int roomID);
+    QSqlQuery selectUnreadMessages(int roomID);
+    QSqlQuery selectReadMessages(int roomID);
     bool insertMessage(int roomID, int userID, QString text);
 private:
     QSqlQuery query;

@@ -15,13 +15,21 @@ queryPull::queryPull()
                             "FROM rooms_users "
                             "INNER JOIN rooms on rooms.id = rooms_users.room_id "
                             "WHERE rooms_users.user_id = :id";
-    mapSetQuery["selectMessages"] ="SELECT messages.id, messages.time_sent, users.name, messages.text "
+    mapSetQuery["selectUnreadMessages"] ="SELECT messages.time_sent, users.name, messages.text "
                                 "FROM messages "
                                 "INNER JOIN users on users.id = messages.sender_id "
                                 "WHERE messages.room_id = :roomID "
                                 "AND "
                                 "CAST(strftime('%s', messages.time_sent)  AS  integer) "
-                                ">= CAST(strftime('%s',  users.time_last_session)  AS  integer)";
+                                "> CAST(strftime('%s',  users.time_last_session)  AS  integer) ";
+    mapSetQuery["selectReadMessages"] ="SELECT messages.time_sent, users.name, messages.text "
+                                "FROM messages "
+                                "INNER JOIN users on users.id = messages.sender_id "
+                                "WHERE messages.room_id = :roomID "
+                                "AND "
+                                "CAST(strftime('%s', messages.time_sent)  AS  integer) "
+                                "<= CAST(strftime('%s',  users.time_last_session)  AS  integer) "
+                                "LIMIT 5 OFFSET 5";
     mapSetQuery["insertNewMessage"] ="INSERT INTO messages "
                                      "(room_id, sender_id, text, time_sent) "
                                      "VALUES (:roomID, :senderID, :text, :td)";
@@ -75,13 +83,24 @@ QSqlQuery queryPull::selectRooms(int id)
     return query;
 }
 
-QSqlQuery queryPull::selectMessages(int roomID)
+QSqlQuery queryPull::selectUnreadMessages(int roomID)
 {
-    query.prepare(mapSetQuery["selectMessages"]);
+    query.prepare(mapSetQuery["selectUnreadMessages"]);
     query.bindValue(":roomID", roomID);
     if (!query.exec())
     {
-        qDebug() << mapSetQuery["selectMessages"] << query.lastError();
+        qDebug() << mapSetQuery["selectUnreadMessages"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectReadMessages(int roomID)
+{
+    query.prepare(mapSetQuery["selectReadMessages"]);
+    query.bindValue(":roomID", roomID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectReadMessages"] << query.lastError();
     }
     return query;
 }

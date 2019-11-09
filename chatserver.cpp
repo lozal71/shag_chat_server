@@ -1,15 +1,16 @@
 #include "chatserver.h"
 
 
-chatServer::chatServer(QObject *mainWindow, const char* logSlot)
+//chatServer::chatServer(QObject *mainWindow, const char* logSlot)
+chatServer::chatServer()
     //mainWindow(mainWindow), logSlot(logSlot)
 {
-   this->mainWindow = mainWindow;
-   this->logSlot = logSlot;
+//   this->mainWindow = mainWindow;
+//   this->logSlot = logSlot;
    serverChat = new QTcpServer();
    db = new reciprocityDB();
-   connect(this, SIGNAL(logToMainWindow(QString)), mainWindow, logSlot);
-   connect(db, SIGNAL(dbConnected(QString)), mainWindow, logSlot);
+   //connect(this, SIGNAL(logToMainWindow(QString)), mainWindow, logSlot);
+   //connect(db, SIGNAL(dbConnected(QString)), mainWindow, logSlot);
    //connect(serverChat, SIGNAL(logQueryReaded(QString)), mainWindow, logSlot);
    setConnectServer();
 }
@@ -35,24 +36,24 @@ void chatServer::setConnectServer()
 
 void chatServer::serverStart()
 {
-
-    qDebug() << "serverStart";
     if (serverChat->listen (QHostAddress::Any, 6000)){
+        qDebug() << "serverStart";
         emit serverStarted();
-        emit logToMainWindow("serverStart \n");
+       // emit logToMainWindow("serverStart \n");
     }
     else{
         qDebug() << "not connect server" << serverChat->errorString();
-        emit logToMainWindow(serverChat->errorString());
+        //emit logToMainWindow(serverChat->errorString());
     }
 }
 
 void chatServer::newClient()
 {
+    qDebug() << "newClient";
     //получаем сокет для дальнейшей связи с клиентом
     session *sessionPntr = new session(serverChat->nextPendingConnection());
     // формируем лист указателей на сессии
-    connect(sessionPntr, SIGNAL(logQueryReaded(QString)), mainWindow, logSlot);
+    //connect(sessionPntr, SIGNAL(logQueryReaded(QString)), mainWindow, logSlot);
     sessionList.append(sessionPntr);
     // связь прервалась - удаляем сессию
     connect(sessionPntr, &session::connectClosed, this, &chatServer::removeSession);
@@ -60,12 +61,14 @@ void chatServer::newClient()
 
 void chatServer::removeSession()
 {
+    qDebug() << "removeSession";
     // определяем сессию(клиента),который послал сигнал
     session *sessionPntr = static_cast<session*>(sender());
     // определяем его id клиента
     int id = sessionPntr->getIdClient();
     // посылаем сигнал в UI для логирования окончания данной сессии
-    emit logToMainWindow("session "+QString::number(id) +" closed\n");
+    //emit logToMainWindow("session "+QString::number(id) +" closed\n");
+    qDebug() << "session "+QString::number(id) +" closed";
     // посылаем сигнал в БД для изменения статуса клиента на офф-лайн
     emit sessionClosedForDB(id);
     // находим указатель в списке сессий и удаляем из списка
