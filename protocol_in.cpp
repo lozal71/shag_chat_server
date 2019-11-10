@@ -6,6 +6,7 @@ protocolIn::protocolIn(){
 
  QJsonDocument protocolIn::receiveJSONdoc(QTcpSocket *socket)
 {
+    //qDebug() << "receiveJSONdoc";
     QJsonDocument jdTemp;
     flag_error = false;
     // если в сокете меньше, чем 4 байта
@@ -14,11 +15,13 @@ protocolIn::protocolIn(){
      }
     else
     {
-        quint32 packageSize; // размер пришедшего сообщения
+        quint32 packageSize = 0; // размер пришедшего сообщения
         quint32 baBufferLength = 0; // размер буфера
         qint64 bytesInSocket = 0;  // число байтов в сокете
         QByteArray baBuffer;
+        baBuffer.clear();
         baBuffer = socket->read(4); // считываем 4 байта
+        //qDebug() << "baBuffer" << baBuffer;
         QDataStream stream(baBuffer); // назначаем baBuffer получателем данных стрима
         stream >> packageSize; // считываем размер пришедшего сообщения
         //qDebug() << "packageSize " << packageSize;
@@ -32,18 +35,19 @@ protocolIn::protocolIn(){
             // если число доступных байт в сокете меньше или равно, чем ожидаемый остаток
             if (bytesInSocket <= packageSize - baBufferLength){
                 baBuffer.append(socket->readAll()); // читаем из буфера все, что есть
-                //qDebug() << "buffer в цикле  " << buffer;
+        //        qDebug() << "buffer в цикле  " << baBuffer;
             }
             else  {
                     // читаем только остаток
                     baBuffer.append(socket->read(packageSize - baBufferLength));
                 }
             baBufferLength += quint32(baBuffer.length());
+            //qDebug() << "baBufferLength" << baBufferLength;
             bytesInSocket = socket->bytesAvailable();
             if (baBufferLength == packageSize) break;
         }
         baBuffer.remove(0, 4); // отсекаем длину сообщения
-        //qDebug() << "buffer в конце " << buffer;
+        //qDebug() << "buffer в конце " << baBuffer;
         QString sBuffer(baBuffer);
         jdTemp = QJsonDocument::fromJson(sBuffer.toUtf8());
 //         qDebug() << "jdTemp " <<jdTemp;

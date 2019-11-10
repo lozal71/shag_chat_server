@@ -12,6 +12,7 @@ QByteArray protocolOut::getPackage()
 
 void protocolOut::setPackage(QJsonDocument jdParam)
 {
+    baPackage.clear();
     //qDebug() << "jdParam" << jdParam;
     QByteArray baTemp = jdParam.toJson(QJsonDocument::Compact);
     //quint32 packageSize = str.length();
