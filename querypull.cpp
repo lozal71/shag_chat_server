@@ -33,6 +33,15 @@ queryPull::queryPull()
     mapSetQuery["insertNewMessage"] ="INSERT INTO messages "
                                      "(room_id, sender_id, text, time_sent) "
                                      "VALUES (:roomID, :senderID, :text, :td)";
+    mapSetQuery["insertNewRoom"] ="INSERT INTO rooms "
+                                  "(name, users_count) "
+                                  "VALUES (:roomName, 1)";
+    mapSetQuery["selectIDNewRoom"] = "SELECT id "
+                                     "FROM rooms "
+                                     "WHERE name = :roomName";
+    mapSetQuery["insertNewRoomUsers"] = " INSERT INTO rooms_users "
+                                        "(room_id, user_id, user_status_id, user_role_id) "
+                                        "VALUES  (:roomID, :userID, 1, 1)";
 }
 
 QSqlQuery queryPull::auth(QString login, QString pass)
@@ -119,6 +128,40 @@ bool queryPull::insertMessage(int roomID, int userID, QString text)
         return false;
     }
     else return true;
+}
+
+int queryPull::getNewRoomID(int userID, QString roomName)
+{
+    int roomID = 0;
+    query.prepare(mapSetQuery["insertNewRoom"]);
+    query.bindValue(":roomName", roomName);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["insertNewRoom"] << query.lastError();
+    }
+    else
+    {
+
+        query.prepare(mapSetQuery["selectIDNewRoom"]);
+        query.bindValue(":roomName", roomName);
+        if (!query.exec())
+        {
+            qDebug() << mapSetQuery["selectIDNewRoom"] << query.lastError();
+        }
+        while (query.next()){
+            roomID = query.value(0).toInt();
+            qDebug() << "roomID" << roomID;
+        }
+        query.prepare(mapSetQuery["insertNewRoomUsers"]);
+        query.bindValue(":roomID", roomID);
+        query.bindValue(":userID", userID);
+        if (!query.exec())
+        {
+            qDebug() << mapSetQuery["insertNewRoomUsers"] << query.lastError();
+        }
+    }
+
+    return roomID;
 }
 
 

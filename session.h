@@ -9,7 +9,7 @@
 #include "reciprocitydb.h"
 
 
-enum setCodeCommand {Auth = 1, Send = 2};
+enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3};
 
 class session: public QObject
 {

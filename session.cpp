@@ -83,6 +83,13 @@ void session::readQueryWriteResponse()
                                                         mapData["text"].toString());
             }
             break;
+            case setCodeCommand::NewRoom:{
+                sLogText = "query new room ";
+                QVariantMap mapData =  mapCommand["joDataInput"].toMap();
+                // получаем ответ из БД
+                mapResponse = sessionDB->insertNewRoom(client.id, mapData["roomNew"].toString());
+                break;
+            }
         }
     }
     //emit logQueryReaded(sLogText);

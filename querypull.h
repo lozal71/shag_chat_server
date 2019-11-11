@@ -18,6 +18,7 @@ public:
     QSqlQuery selectUnreadMessages(int roomID);
     QSqlQuery selectReadMessages(int roomID);
     bool insertMessage(int roomID, int userID, QString text);
+    int getNewRoomID(int userID, QString roomName);
 private:
     QSqlQuery query;
     QMap<QString,QString> mapSetQuery;

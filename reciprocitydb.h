@@ -19,14 +19,10 @@ public:
     void connectChatToDB();
     void setStatusOFFline(int id);
     QVariantMap readMessage(int roomID, int userID, QString text);
+    QVariantMap insertNewRoom(int userID, QString roomName);
 private:
-//    void setStatusONline(int id);
-//    void setStatusRead(int id);
-//    void setCurrentTime(int id);
     QVariantMap setMapRooms(int id);
     QVariantMap setMapMessages(int roomID);
-//signals:
-//     void dbConnected(const QString &text);
 
 };
 

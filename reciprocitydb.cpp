@@ -34,6 +34,14 @@ QVariantMap reciprocityDB::readMessage(int roomID, int userID, QString text)
     return mapResponseDB;
 }
 
+QVariantMap reciprocityDB::insertNewRoom(int userID, QString roomName)
+{
+    QVariantMap mapResponseDB;
+    queryPull query;
+    mapResponseDB["newRoomID"] = query.getNewRoomID(userID, roomName);
+    return mapResponseDB;
+}
+
 
 void reciprocityDB::connectChatToDB()
 {
