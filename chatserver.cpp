@@ -1,17 +1,9 @@
 #include "chatserver.h"
 
-
-//chatServer::chatServer(QObject *mainWindow, const char* logSlot)
 chatServer::chatServer()
-    //mainWindow(mainWindow), logSlot(logSlot)
 {
-//   this->mainWindow = mainWindow;
-//   this->logSlot = logSlot;
    serverChat = new QTcpServer();
    db = new reciprocityDB();
-   //connect(this, SIGNAL(logToMainWindow(QString)), mainWindow, logSlot);
-   //connect(db, SIGNAL(dbConnected(QString)), mainWindow, logSlot);
-   //connect(serverChat, SIGNAL(logQueryReaded(QString)), mainWindow, logSlot);
    setConnectServer();
 }
 

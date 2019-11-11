@@ -15,18 +15,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    chatServer* getServer();
+private slots:
+    void on_pbQuit_clicked();
 
 private:
     Ui::MainWindow *ui;
     chatServer* server;
-    //session *sessionClient;
-    //reciprocityDB *dbChat;
-    void setConnectServerUI();
-//    void netError(const QString& text);
-    void buttonStartNotEnable();
-
-
-//public slots:
-//    void logServer(const QString& text);
 };
 #endif // MAINWINDOW_H
