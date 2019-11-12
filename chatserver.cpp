@@ -56,7 +56,7 @@ void chatServer::removeSession()
     qDebug() << "removeSession";
     // определяем сессию(клиента),который послал сигнал
     session *sessionPntr = static_cast<session*>(sender());
-    // определяем его id клиента
+    // определяем id клиента
     int id = sessionPntr->getIdClient();
     // посылаем сигнал в UI для логирования окончания данной сессии
     //emit logToMainWindow("session "+QString::number(id) +" closed\n");

@@ -39,7 +39,13 @@ QVariantMap reciprocityDB::insertNewRoom(int userID, QString roomName)
     QVariantMap mapResponseDB;
     queryPull query;
     mapResponseDB["newRoomID"] = query.getNewRoomID(userID, roomName);
+    mapResponseDB["newRoomName"] = roomName;
     return mapResponseDB;
+}
+
+QVariantMap reciprocityDB::delRoom(int roomID)
+{
+
 }
 
 
@@ -80,12 +86,14 @@ QVariantMap reciprocityDB::setMapRooms(int id)
     // собираем информацию в MAP
     int roomID;
     QString roomName;
+    int userRoleID;
     QVariantMap mapRoomsID; // {roomID:{mapRoomName}}
     QVariantMap mapRoomName; // {roomName:{mapMapMessages}}
     mapRoomName.clear();
     while (qRooms.next()){
         roomID = qRooms.value(0).toInt();
         roomName = qRooms.value(1).toString();
+        userRoleID = qRooms.value(2).toInt();
         // определяем сообщения в комнате
         mapRoomName[roomName] = setMapMessages(roomID);
         mapRoomsID[QString::number(roomID)] = mapRoomName;

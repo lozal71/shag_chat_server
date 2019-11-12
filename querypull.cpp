@@ -11,7 +11,7 @@ queryPull::queryPull()
     mapSetQuery["userOffLine"] = "UPDATE users "
                                  "SET status = 2, time_last_session = time_session "
                                  "WHERE id = :id";
-    mapSetQuery["selectRooms"]="SELECT rooms_users.room_id, rooms.name "
+    mapSetQuery["selectRooms"]="SELECT rooms_users.room_id, rooms.name, rooms_users.user_role_id "
                             "FROM rooms_users "
                             "INNER JOIN rooms on rooms.id = rooms_users.room_id "
                             "WHERE rooms_users.user_id = :id";

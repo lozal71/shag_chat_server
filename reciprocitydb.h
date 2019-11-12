@@ -20,6 +20,7 @@ public:
     void setStatusOFFline(int id);
     QVariantMap readMessage(int roomID, int userID, QString text);
     QVariantMap insertNewRoom(int userID, QString roomName);
+    QVariantMap delRoom(int roomID);
 private:
     QVariantMap setMapRooms(int id);
     QVariantMap setMapMessages(int roomID);
