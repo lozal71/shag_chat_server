@@ -53,7 +53,7 @@ queryPull::queryPull()
                                         "FROM rooms_users "
                                         "INNER JOIN "
                                         "rooms on rooms_users.room_id = rooms.id "
-                                        "WHERE room_id = :roomID and user_role_id != 1 ";
+                                        "WHERE room_id = :roomID ";
     mapSetQuery["delRoom"] = "DELETE FROM rooms WHERE rooms.id = :roomID";
     mapSetQuery["delRoomFromRoomsUsers"] = "DELETE FROM rooms_users WHERE rooms_users.room_id = :roomID";
 //    mapSetQuery["selectCastMessage"] = "SELECT messages.time_sent, users.name, messages.text "

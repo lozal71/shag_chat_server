@@ -41,7 +41,7 @@ void session::broadCastDelRoom(QString text, int roomID)
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-    qDebug() << "jdResponse" << jdResponse;
+    qDebug() << "44 jdResponse" << jdResponse;
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }
@@ -68,7 +68,9 @@ void session::broadCast(QString text, int roomID, int senderID)
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-    qDebug() << "jdResponse" << jdResponse;
+    qDebug() << "client.id"  << client.id;
+    qDebug() << " 71 jdResponse" << jdResponse;
+
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }
@@ -89,7 +91,7 @@ void session::readQueryWriteResponse()
     //qDebug() << "joTemp" << joTemp;
     QVariantMap mapCommand =joTemp.toVariantMap();
     QVariantMap mapResponse;
-    //qDebug() << "mapCommand" << mapCommand;
+    qDebug() << "94 mapCommand" << mapCommand;
 
     // определяем команду запроса
     codeCommand = setCodeCommand(mapCommand["codeCommand"].toInt());
@@ -123,6 +125,7 @@ void session::readQueryWriteResponse()
                 mapUserOnline = sessionDB->readMessage(mapData["roomID"].toInt(),
                                                         client.id,
                                                         mapData["text"].toString());
+                qDebug() << "126 mapUserOnline" <<mapUserOnline ;
                 mapResponse["roomID"] = mapData["roomID"].toInt();
                 emit notifyNewMessage(mapUserOnline,mapData["roomID"].toInt(),client.id);
             }
@@ -145,6 +148,20 @@ void session::readQueryWriteResponse()
                 emit notifyRoomRemoval(mapUserOnline, delRoomID);
                 break;
             }
+//            case setCodeCommand::CastMess:
+//            {
+//                QVariantMap mapData =  mapCommand["joDataInput"].toMap();
+//                // получаем ответ из БД
+//                //qDebug() << "mapData" << mapData;
+//                QMap<int,QString> mapUserOnline;
+//                mapUserOnline = sessionDB->readMessage(mapData["roomID"].toInt(),
+//                                                        client.id,
+//                                                        mapData["text"].toString());
+//                qDebug() << "160 mapUserOnline" <<mapUserOnline ;
+//                mapResponse["roomID"] = mapData["roomID"].toInt();
+//                emit notifyNewMessage(mapUserOnline,mapData["roomID"].toInt(),client.id);
+//                break;
+//            }
         }
     }
     //emit logQueryReaded(sLogText);
