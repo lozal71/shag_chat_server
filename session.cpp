@@ -32,13 +32,40 @@ void session::setConnectSession()
             this, &session::connectClosed);
 }
 
-void session::broadCast(QString text, int delRoomID)
+void session::broadCastDelRoom(QString text, int roomID)
 {
     QVariantMap mapCommand;
     QVariantMap mapData;
-    mapCommand["codeCommand"] = setCodeCommand::Cast;
+    mapCommand["codeCommand"] = setCodeCommand::CastDelRoom;
     mapData["cast"] = text;
-    mapData["delRoomID"] = delRoomID;
+    mapData["roomID"] = roomID;
+    mapCommand["joDataInput"] = mapData;
+    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
+    qDebug() << "jdResponse" << jdResponse;
+    out->setPackage(jdResponse);
+    socketSession->write(out->getPackage());
+}
+
+void session::broadCast(QString text, int roomID, int senderID)
+{
+    QVariantMap mapCommand;
+    QVariantMap mapData; // {"cast":{mapCastMessage},
+    mapCommand["codeCommand"] = setCodeCommand::CastMess;
+    QVariantMap mapCastMessage; //  {messTime:{mapSenderMessage}}
+    QVariantMap mapReadMessage; //  {messTime:{mapSenderMessage}}
+    QVariantMap mapSenderMessage; // {senderName:{textMess}}
+    QString messTime;
+    QString senderName;
+    QString textMess;
+    QDateTime td;
+    td = td.currentDateTime();
+    messTime =  td.toString();
+    senderName = QString::number(senderID);
+    textMess = text;
+    mapSenderMessage[senderName] = textMess;
+    mapCastMessage[messTime] = mapSenderMessage;
+    mapData["cast"] = mapCastMessage;
+    mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
     qDebug() << "jdResponse" << jdResponse;
@@ -92,9 +119,12 @@ void session::readQueryWriteResponse()
                 QVariantMap mapData =  mapCommand["joDataInput"].toMap();
                 // получаем ответ из БД
                 //qDebug() << "mapData" << mapData;
-                mapResponse = sessionDB->readMessage(mapData["roomID"].toInt(),
+                QMap<int,QString> mapUserOnline;
+                mapUserOnline = sessionDB->readMessage(mapData["roomID"].toInt(),
                                                         client.id,
                                                         mapData["text"].toString());
+                mapResponse["roomID"] = mapData["roomID"].toInt();
+                emit notifyNewMessage(mapUserOnline,mapData["roomID"].toInt(),client.id);
             }
             break;
             case setCodeCommand::NewRoom:{

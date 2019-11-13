@@ -22,7 +22,8 @@ private:
     void newClient();
     void removeSession();
     void setConnectServer();
-    void seachSession(QMap<int,QString> mapUserOnline, int delRoomID);
+    void seachSessionForDelRoom(QMap<int,QString> mapUserOnline, int roomID);
+    void seachSession(QMap<int,QString> mapUserOnline, int roomID, int senderID);
     QObject *mainWindow;
     const char* logSlot;
 

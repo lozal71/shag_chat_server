@@ -26,12 +26,27 @@ QVariantMap reciprocityDB::mapResponseAuth(QString login, QString pass)
 }
 
 
-QVariantMap reciprocityDB::readMessage(int roomID, int userID, QString text)
+QMap<int,QString> reciprocityDB::readMessage(int roomID, int userID, QString text)
 {
-    QVariantMap mapResponseDB;
+    //QVariantMap mapResponseDB;
     queryPull query;
-    mapResponseDB["sendResult"] = query.insertMessage(roomID,userID,text);
-    return mapResponseDB;
+    query.insertMessage(roomID,userID,text);
+    //mapResponseDB["sendResult"] = query.insertMessage(roomID,userID,text);
+    QMap<int,QString> mapUserOnline;
+    int status = 0;
+    int id = 0;
+    QSqlQuery qUserFromRoom = query.selectUserFromRoom(roomID);
+    while (qUserFromRoom.next()){
+        id = qUserFromRoom.value(0).toInt();
+        //delRoomName = qUserFromDelRoom.value(1).toString();
+        status = qUserFromRoom.value(2).toInt();
+        if (status == 1) {
+            mapUserOnline[id] = text;
+            //query.insertMessage(1,adminID,"Room " + delRoomName + " is moving away");
+        }
+    }
+
+    return mapUserOnline;
 }
 
 QVariantMap reciprocityDB::insertNewRoom(int userID, QString roomName)
@@ -63,9 +78,9 @@ QMap<int,QString> reciprocityDB::delRoom(int roomID, int adminID)
             query.insertMessage(1,adminID,"Room " + delRoomName + " is moving away");
         }
     }
-    //query.delRoom(roomID);
+    query.delRoom(roomID);
 
-    qDebug() << "mapUserOnline" << mapUserOnline;
+    //qDebug() << "mapUserOnline" << mapUserOnline;
     return mapUserOnline;
 }
 
@@ -181,27 +196,27 @@ QVariantMap reciprocityDB::setMapMessages(int roomID)
     return mapAllMessage;
 }
 
-QVariantMap reciprocityDB::setMapCastMessages(int roomID, int adminID)
-{
-    // выбираем непрочитанные сообщения в комнате
-    queryPull query;
-    QSqlQuery qMessage = query.selectCastMessage(roomID);
-    // собираем информацию в MAP
-    QVariantMap mapAllMessage; // {"cast":{mapCastMessage},
-    QVariantMap mapCastMessage; //  {messTime:{mapSenderMessage}}
-    QVariantMap mapReadMessage; //  {messTime:{mapSenderMessage}}
-    QVariantMap mapSenderMessage; // {senderName:{textMess}}
-    QString messTime;
-    QString senderName;
-    QString textMess;
-    while (qMessage.next()){
-        messTime = qMessage.value(0).toString();
-        senderName = qMessage.value(1).toString();
-        textMess = qMessage.value(2).toString();
-        mapSenderMessage[senderName] = textMess;
-        mapCastMessage[messTime] = mapSenderMessage;
-        mapSenderMessage.clear();
-    }
-    mapAllMessage["cast"]=mapCastMessage;
-    return mapAllMessage;
-}
+//QVariantMap reciprocityDB::setMapCastMessages(int roomID)
+//{
+//    // выбираем непрочитанные сообщения в комнате
+//    queryPull query;
+//    QSqlQuery qMessage = query.selectCastMessage(roomID);
+//    // собираем информацию в MAP
+//    QVariantMap mapAllMessage; // {"cast":{mapCastMessage},
+//    QVariantMap mapCastMessage; //  {messTime:{mapSenderMessage}}
+//    QVariantMap mapReadMessage; //  {messTime:{mapSenderMessage}}
+//    QVariantMap mapSenderMessage; // {senderName:{textMess}}
+//    QString messTime;
+//    QString senderName;
+//    QString textMess;
+//    while (qMessage.next()){
+//        messTime = qMessage.value(0).toString();
+//        senderName = qMessage.value(1).toString();
+//        textMess = qMessage.value(2).toString();
+//        mapSenderMessage[senderName] = textMess;
+//        mapCastMessage[messTime] = mapSenderMessage;
+//        mapSenderMessage.clear();
+//    }
+//    mapAllMessage["cast"]=mapCastMessage;
+//    return mapAllMessage;
+//}

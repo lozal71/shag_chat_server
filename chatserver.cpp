@@ -26,7 +26,7 @@ void chatServer::setConnectServer()
             db,&reciprocityDB::setStatusOFFline);
 }
 
-void chatServer::seachSession(QMap<int,QString> mapUserOnline, int delRoomID)
+void chatServer::seachSessionForDelRoom(QMap<int,QString> mapUserOnline, int roomID)
 {
     if (!mapUserOnline.isEmpty()){
         for (const int id: mapUserOnline.keys()){
@@ -35,10 +35,29 @@ void chatServer::seachSession(QMap<int,QString> mapUserOnline, int delRoomID)
             while (i.hasNext()){
                 currentSession = i.next();
                 if (currentSession->getIdClient() == id){
+                    currentSession->broadCastDelRoom(mapUserOnline[id], roomID);
                     break;
                 }
             }
-            currentSession->broadCast(mapUserOnline[id], delRoomID);
+
+        }
+    }
+}
+
+void chatServer::seachSession(QMap<int, QString> mapUserOnline, int roomID, int senderID)
+{
+    if (!mapUserOnline.isEmpty()){
+        for (const int id: mapUserOnline.keys()){
+            QMutableListIterator<session*> i(sessionList);
+            session* currentSession;
+            while (i.hasNext()){
+                currentSession = i.next();
+                if (currentSession->getIdClient() == id){
+                    currentSession->broadCast(mapUserOnline[id], roomID, senderID);
+                    break;
+                }
+            }
+
         }
     }
 }
@@ -68,6 +87,8 @@ void chatServer::newClient()
     connect(sessionPntr, &session::connectClosed,
             this, &chatServer::removeSession);
     connect(sessionPntr, &session::notifyRoomRemoval,
+            this, &chatServer::seachSessionForDelRoom);
+    connect(sessionPntr, &session::notifyNewMessage,
             this, &chatServer::seachSession);
 }
 

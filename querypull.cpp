@@ -55,11 +55,11 @@ queryPull::queryPull()
                                         "rooms on rooms_users.room_id = rooms.id "
                                         "WHERE room_id = :roomID and user_role_id != 1 ";
     mapSetQuery["delRoom"] = "DELETE FROM rooms WHERE rooms.id = :roomID";
-    mapSetQuery["delRoomFromRoomsUsers"] = "DELETE FROM rooms_users WHERE rooms.id = :roomID";
-    mapSetQuery["selectCastMessage"] = "SELECT messages.time_sent, users.name, messages.text "
-                                       "FROM messages "
-                                       "INNER JOIN users on users.id = messages.sender_id "
-                                       "WHERE messages.room_id = :roomID ";
+    mapSetQuery["delRoomFromRoomsUsers"] = "DELETE FROM rooms_users WHERE rooms_users.room_id = :roomID";
+//    mapSetQuery["selectCastMessage"] = "SELECT messages.time_sent, users.name, messages.text "
+//                                       "FROM messages "
+//                                       "INNER JOIN users on users.id = messages.sender_id "
+//                                       "WHERE messages.room_id = :roomID ";
 }
 
 QSqlQuery queryPull::auth(QString login, QString pass)
