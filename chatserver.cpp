@@ -26,7 +26,7 @@ void chatServer::setConnectServer()
             db,&reciprocityDB::setStatusOFFline);
 }
 
-void chatServer::seachSession(QMap<int,QString> mapUserOnline)
+void chatServer::seachSession(QMap<int,QString> mapUserOnline, int delRoomID)
 {
     if (!mapUserOnline.isEmpty()){
         for (const int id: mapUserOnline.keys()){
@@ -38,7 +38,7 @@ void chatServer::seachSession(QMap<int,QString> mapUserOnline)
                     break;
                 }
             }
-            currentSession->broadCast(mapUserOnline[id]);
+            currentSession->broadCast(mapUserOnline[id], delRoomID);
         }
     }
 }

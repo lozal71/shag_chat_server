@@ -32,14 +32,16 @@ void session::setConnectSession()
             this, &session::connectClosed);
 }
 
-void session::broadCast(QString text)
+void session::broadCast(QString text, int delRoomID)
 {
     QVariantMap mapCommand;
     QVariantMap mapData;
     mapCommand["codeCommand"] = setCodeCommand::Cast;
-    mapCommand["joDataInput"] = text;
+    mapData["cast"] = text;
+    mapData["delRoomID"] = delRoomID;
+    mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-    //qDebug() << "jdResponse" << jdResponse;
+    qDebug() << "jdResponse" << jdResponse;
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }
@@ -109,8 +111,8 @@ void session::readQueryWriteResponse()
                 QMap<int,QString> mapUserOnline;
                 int delRoomID = mapData["delRoomID"].toInt();
                 mapUserOnline = sessionDB->delRoom(delRoomID, client.id);
-                //if (mapResponse.isEmpty()) mapResponse["delResult"] = 1;
-                emit notifyRoomRemoval(mapUserOnline);
+                mapResponse["delRoomID"] = delRoomID;
+                emit notifyRoomRemoval(mapUserOnline, delRoomID);
                 break;
             }
         }

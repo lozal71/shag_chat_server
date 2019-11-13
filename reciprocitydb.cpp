@@ -65,7 +65,7 @@ QMap<int,QString> reciprocityDB::delRoom(int roomID, int adminID)
     }
     //query.delRoom(roomID);
 
-    //qDebug() << "mapUserOnline" << mapUserOnline;
+    qDebug() << "mapUserOnline" << mapUserOnline;
     return mapUserOnline;
 }
 
