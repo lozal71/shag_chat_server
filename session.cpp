@@ -32,6 +32,18 @@ void session::setConnectSession()
             this, &session::connectClosed);
 }
 
+void session::broadCast(QString text)
+{
+    QVariantMap mapCommand;
+    QVariantMap mapData;
+    mapCommand["codeCommand"] = setCodeCommand::Cast;
+    mapCommand["joDataInput"] = text;
+    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
+    //qDebug() << "jdResponse" << jdResponse;
+    out->setPackage(jdResponse);
+    socketSession->write(out->getPackage());
+}
+
 int session::getIdClient()
 {
     return client.id;
@@ -93,8 +105,12 @@ void session::readQueryWriteResponse()
             case setCodeCommand::DelRoom:{
                 sLogText = "query del room ";
                 QVariantMap mapData =  mapCommand["joDataInput"].toMap();
-                // получаем ответ из БД
-                mapResponse = sessionDB->delRoom(mapData["delRoomID"].toInt());
+                // удаляем комнату из БД
+                QMap<int,QString> mapUserOnline;
+                int delRoomID = mapData["delRoomID"].toInt();
+                mapUserOnline = sessionDB->delRoom(delRoomID, client.id);
+                //if (mapResponse.isEmpty()) mapResponse["delResult"] = 1;
+                emit notifyRoomRemoval(mapUserOnline);
                 break;
             }
         }

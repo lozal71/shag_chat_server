@@ -26,6 +26,23 @@ void chatServer::setConnectServer()
             db,&reciprocityDB::setStatusOFFline);
 }
 
+void chatServer::seachSession(QMap<int,QString> mapUserOnline)
+{
+    if (!mapUserOnline.isEmpty()){
+        for (const int id: mapUserOnline.keys()){
+            QMutableListIterator<session*> i(sessionList);
+            session* currentSession;
+            while (i.hasNext()){
+                currentSession = i.next();
+                if (currentSession->getIdClient() == id){
+                    break;
+                }
+            }
+            currentSession->broadCast(mapUserOnline[id]);
+        }
+    }
+}
+
 void chatServer::serverStart()
 {
     if (serverChat->listen (QHostAddress::Any, 6000)){
@@ -48,7 +65,10 @@ void chatServer::newClient()
     //connect(sessionPntr, SIGNAL(logQueryReaded(QString)), mainWindow, logSlot);
     sessionList.append(sessionPntr);
     // связь прервалась - удаляем сессию
-    connect(sessionPntr, &session::connectClosed, this, &chatServer::removeSession);
+    connect(sessionPntr, &session::connectClosed,
+            this, &chatServer::removeSession);
+    connect(sessionPntr, &session::notifyRoomRemoval,
+            this, &chatServer::seachSession);
 }
 
 void chatServer::removeSession()

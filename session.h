@@ -9,7 +9,7 @@
 #include "reciprocitydb.h"
 
 
-enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3, DelRoom = 4};
+enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3, DelRoom = 4, Cast = 5};
 
 class session: public QObject
 {
@@ -19,6 +19,7 @@ public:
     ~session();
     session(QTcpSocket *socket);
     int getIdClient();
+    void broadCast(QString text);
 private:
     QTcpSocket *socketSession;
     protocolIn *in;
@@ -30,11 +31,13 @@ private:
     } client;
     void readQueryWriteResponse();
     void setConnectSession();
+
 signals:
     void connectClosed();
     void sessionClosed(int id);
     void logQueryReaded(const QString &text);
     void queryReaded(QVariantMap mapParam);
+    void notifyRoomRemoval(QMap<int,QString> mapUserOnline );
 };
 
 #endif // SESSION_H

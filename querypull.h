@@ -14,9 +14,12 @@ public:
     QSqlQuery auth(QString login, QString pass);
     QSqlQuery userOnLine(int id);
     QSqlQuery userOffLine(int id);
-    QSqlQuery selectRooms(int id);
+    QSqlQuery selectRooms(int id, int userRole);
     QSqlQuery selectUnreadMessages(int roomID);
     QSqlQuery selectReadMessages(int roomID);
+    QSqlQuery selectUserFromRoom(int roomID);
+    QSqlQuery selectCastMessage(int roomID);
+    bool delRoom(int roomID);
     bool insertMessage(int roomID, int userID, QString text);
     int getNewRoomID(int userID, QString roomName);
 private:

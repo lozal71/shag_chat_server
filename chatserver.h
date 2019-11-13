@@ -22,7 +22,7 @@ private:
     void newClient();
     void removeSession();
     void setConnectServer();
-
+    void seachSession(QMap<int,QString> mapUserOnline);
     QObject *mainWindow;
     const char* logSlot;
 

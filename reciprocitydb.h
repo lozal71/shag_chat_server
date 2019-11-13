@@ -7,6 +7,7 @@
 //#include <QSqlDatabase>
 //#include <QDebug>
 #include <QVariantMap>
+#include <QList>
 #include "querypull.h"
 
 class reciprocityDB: public QObject
@@ -20,7 +21,8 @@ public:
     void setStatusOFFline(int id);
     QVariantMap readMessage(int roomID, int userID, QString text);
     QVariantMap insertNewRoom(int userID, QString roomName);
-    QVariantMap delRoom(int roomID);
+    QMap<int,QString> delRoom(int roomID, int adminID);
+    QVariantMap setMapCastMessages(int roomID, int adminID);
 private:
     QVariantMap setMapRooms(int id);
     QVariantMap setMapMessages(int roomID);

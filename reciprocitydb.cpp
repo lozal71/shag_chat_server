@@ -43,9 +43,30 @@ QVariantMap reciprocityDB::insertNewRoom(int userID, QString roomName)
     return mapResponseDB;
 }
 
-QVariantMap reciprocityDB::delRoom(int roomID)
+QMap<int,QString> reciprocityDB::delRoom(int roomID, int adminID)
 {
+    int id = 0;
+    int status;
+    QString delRoomName;
+    QMap<int,QString> mapUserOnline;
+    queryPull query;
+    QSqlQuery qUserFromDelRoom = query.selectUserFromRoom(roomID);
+    while (qUserFromDelRoom.next()){
+        id = qUserFromDelRoom.value(0).toInt();
+        delRoomName = qUserFromDelRoom.value(1).toString();
+        status = qUserFromDelRoom.value(2).toInt();
+        if (status == 1) {
+            mapUserOnline[id] = "Room " + delRoomName + " is moving away";
+            //query.insertMessage(1,adminID,"Room " + delRoomName + " is moving away");
+        }
+        else{
+            query.insertMessage(1,adminID,"Room " + delRoomName + " is moving away");
+        }
+    }
+    //query.delRoom(roomID);
 
+    //qDebug() << "mapUserOnline" << mapUserOnline;
+    return mapUserOnline;
 }
 
 
@@ -82,25 +103,40 @@ QVariantMap reciprocityDB::setMapRooms(int id)
 {
     //выбираем комнаты для клиента
     queryPull query;
-    QSqlQuery qRooms = query.selectRooms(id);
+    QSqlQuery qRoomsAdminRole = query.selectRooms(id,1);
+    QSqlQuery qRoomsUserRole = query.selectRooms(id,2);
     // собираем информацию в MAP
     int roomID;
     QString roomName;
-    int userRoleID;
+    QVariantMap mapUserRole; // {"admin":{mapRoomsID},
+                             //  "user":{mapRoomsID}
     QVariantMap mapRoomsID; // {roomID:{mapRoomName}}
     QVariantMap mapRoomName; // {roomName:{mapMapMessages}}
-    mapRoomName.clear();
-    while (qRooms.next()){
-        roomID = qRooms.value(0).toInt();
-        roomName = qRooms.value(1).toString();
-        userRoleID = qRooms.value(2).toInt();
+    // собираем команты, в которых клиент - admin
+    while (qRoomsAdminRole.next()){
+        roomID = qRoomsAdminRole.value(0).toInt();
+        roomName = qRoomsAdminRole.value(1).toString();
         // определяем сообщения в комнате
         mapRoomName[roomName] = setMapMessages(roomID);
         mapRoomsID[QString::number(roomID)] = mapRoomName;
         mapRoomName.clear();
     }
     //qDebug() << "mapRoomsID" <<  mapRoomsID;
-    return mapRoomsID;
+    mapUserRole["admin"] = mapRoomsID;
+    mapRoomsID.clear();
+    // собираем команты, в которых клиент - user
+    while (qRoomsUserRole.next()){
+        roomID = qRoomsUserRole.value(0).toInt();
+        roomName = qRoomsUserRole.value(1).toString();
+        // определяем сообщения в комнате
+        mapRoomName[roomName] = setMapMessages(roomID);
+        mapRoomsID[QString::number(roomID)] = mapRoomName;
+        mapRoomName.clear();
+    }
+    mapUserRole["user"] = mapRoomsID;
+//    qDebug() << "mapRoomsID" <<  mapRoomsID;
+//    qDebug() << "mapUserRole" <<  mapUserRole;
+    return mapUserRole;
 }
 
 QVariantMap reciprocityDB::setMapMessages(int roomID)
@@ -142,5 +178,30 @@ QVariantMap reciprocityDB::setMapMessages(int roomID)
     //qDebug() << "mapreadMessage" <<  mapReadMessage;
     mapAllMessage["read"]=mapReadMessage;
     //qDebug() << "mapAllMessage" << mapAllMessage;
+    return mapAllMessage;
+}
+
+QVariantMap reciprocityDB::setMapCastMessages(int roomID, int adminID)
+{
+    // выбираем непрочитанные сообщения в комнате
+    queryPull query;
+    QSqlQuery qMessage = query.selectCastMessage(roomID);
+    // собираем информацию в MAP
+    QVariantMap mapAllMessage; // {"cast":{mapCastMessage},
+    QVariantMap mapCastMessage; //  {messTime:{mapSenderMessage}}
+    QVariantMap mapReadMessage; //  {messTime:{mapSenderMessage}}
+    QVariantMap mapSenderMessage; // {senderName:{textMess}}
+    QString messTime;
+    QString senderName;
+    QString textMess;
+    while (qMessage.next()){
+        messTime = qMessage.value(0).toString();
+        senderName = qMessage.value(1).toString();
+        textMess = qMessage.value(2).toString();
+        mapSenderMessage[senderName] = textMess;
+        mapCastMessage[messTime] = mapSenderMessage;
+        mapSenderMessage.clear();
+    }
+    mapAllMessage["cast"]=mapCastMessage;
     return mapAllMessage;
 }
