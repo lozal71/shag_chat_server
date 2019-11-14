@@ -20,7 +20,7 @@ public:
     session(QTcpSocket *socket);
     int getIdClient();
     void broadCastDelRoom(QString text, int roomID);
-    void broadCast(QString text, int roomID, int senderID);
+    void broadCast(QVariantMap mapTimeSenderMess, int roomID, int senderID);
 private:
     QTcpSocket *socketSession;
     protocolIn *in;
@@ -39,7 +39,7 @@ signals:
     void logQueryReaded(const QString &text);
     void queryReaded(QVariantMap mapParam);
     void notifyRoomRemoval(QMap<int,QString> mapUserOnline, int delRoomID);
-    void notifyNewMessage(QMap<int,QString> mapUserOnline, int roomID, int senderID);
+    void notifyNewMessage(QVariantMap mapUserOnline, int roomID, int senderID);
 };
 
 #endif // SESSION_H

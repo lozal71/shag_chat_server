@@ -26,27 +26,44 @@ QVariantMap reciprocityDB::mapResponseAuth(QString login, QString pass)
 }
 
 
-QMap<int,QString> reciprocityDB::readMessage(int roomID, int userID, QString text)
+QVariantMap reciprocityDB::insertMessage(int roomID, int userID, QString text)
 {
-    //QVariantMap mapResponseDB;
+    QVariantMap mapResponseDB;
     queryPull query;
+    // вставляем текст сообщения в БД
     query.insertMessage(roomID,userID,text);
-    //mapResponseDB["sendResult"] = query.insertMessage(roomID,userID,text);
-    QMap<int,QString> mapUserOnline;
-    int status = 0;
+    // запрашиваем имя отправителя сообщения
+    QString senderName;
+    QSqlQuery qSenderName = query.selectUserName(userID);
+    while (qSenderName.next()){
+        senderName = qSenderName.value(0).toString();
+    }
+    // формируем MAP {time:{sendername:{text}}}
+    QVariantMap mapSender;
+    mapSender[senderName] = text;
+    QDateTime td;
+    td = td.currentDateTime();
+    QVariantMap mapTime;
+    mapTime[td.toString()] = mapSender;
     int id = 0;
-    QSqlQuery qUserFromRoom = query.selectUserFromRoom(roomID);
+    int status = 0;
+    int castRoomID = 0;
+    // делаем запрос в БД о пользователях в режиме онлайн,
+    // которым будем делать рассылку поступившего сообщения
+    QSqlQuery qUserFromRoom = query.selectUserFromRoom(roomID, userID);
+    // собираем итоговый ответ в MAP
     while (qUserFromRoom.next()){
         id = qUserFromRoom.value(0).toInt();
-        //delRoomName = qUserFromDelRoom.value(1).toString();
         status = qUserFromRoom.value(2).toInt();
+        castRoomID = qUserFromRoom.value(3).toInt();
         if (status == 1) {
-            mapUserOnline[id] = text;
-            //query.insertMessage(1,adminID,"Room " + delRoomName + " is moving away");
+            mapResponseDB[QString::number(id)]=mapTime;
         }
-    }
-
-    return mapUserOnline;
+        else {
+            query.insertMessage(castRoomID, userID, text);
+        }
+     }
+    return mapResponseDB;
 }
 
 QVariantMap reciprocityDB::insertNewRoom(int userID, QString roomName)
@@ -65,7 +82,7 @@ QMap<int,QString> reciprocityDB::delRoom(int roomID, int adminID)
     QString delRoomName;
     QMap<int,QString> mapUserOnline;
     queryPull query;
-    QSqlQuery qUserFromDelRoom = query.selectUserFromRoom(roomID);
+    QSqlQuery qUserFromDelRoom = query.selectUserFromRoom(roomID, adminID);
     while (qUserFromDelRoom.next()){
         id = qUserFromDelRoom.value(0).toInt();
         delRoomName = qUserFromDelRoom.value(1).toString();

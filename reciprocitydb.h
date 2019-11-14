@@ -19,7 +19,7 @@ public:
     QVariantMap mapResponseAuth(QString login, QString pass);
     void connectChatToDB();
     void setStatusOFFline(int id);
-    QMap<int,QString> readMessage(int roomID, int userID, QString text);
+    QVariantMap insertMessage(int roomID, int userID, QString text);
     QVariantMap insertNewRoom(int userID, QString roomName);
     QMap<int,QString> delRoom(int roomID, int adminID);
     //QVariantMap setMapCastMessages(int roomID);

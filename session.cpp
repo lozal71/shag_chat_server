@@ -41,30 +41,30 @@ void session::broadCastDelRoom(QString text, int roomID)
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-    qDebug() << "44 jdResponse" << jdResponse;
+    //qDebug() << "44 jdResponse" << jdResponse;
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }
 
-void session::broadCast(QString text, int roomID, int senderID)
+void session::broadCast(QVariantMap mapTimeSenderMess, int roomID, int senderID)
 {
     QVariantMap mapCommand;
     QVariantMap mapData; // {"cast":{mapCastMessage},
     mapCommand["codeCommand"] = setCodeCommand::CastMess;
-    QVariantMap mapCastMessage; //  {messTime:{mapSenderMessage}}
-    QVariantMap mapReadMessage; //  {messTime:{mapSenderMessage}}
-    QVariantMap mapSenderMessage; // {senderName:{textMess}}
-    QString messTime;
-    QString senderName;
-    QString textMess;
-    QDateTime td;
-    td = td.currentDateTime();
-    messTime =  td.toString();
-    senderName = QString::number(senderID);
-    textMess = text;
-    mapSenderMessage[senderName] = textMess;
-    mapCastMessage[messTime] = mapSenderMessage;
-    mapData["cast"] = mapCastMessage;
+//    QVariantMap mapCastMessage; //  {messTime:{mapSenderMessage}}
+//    QVariantMap mapReadMessage; //  {messTime:{mapSenderMessage}}
+//    QVariantMap mapSenderMessage; // {senderName:{textMess}}
+//    QString messTime;
+//    QString senderName;
+//    QString textMess;
+//    QDateTime td;
+//    td = td.currentDateTime();
+//    messTime =  td.toString();
+//    senderName = QString::number(senderID);
+//    textMess = text;
+//    mapSenderMessage[senderName] = textMess;
+//    mapCastMessage[messTime] = mapSenderMessage;
+    mapData["cast"] = mapTimeSenderMess;
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
@@ -91,7 +91,7 @@ void session::readQueryWriteResponse()
     //qDebug() << "joTemp" << joTemp;
     QVariantMap mapCommand =joTemp.toVariantMap();
     QVariantMap mapResponse;
-    qDebug() << "94 mapCommand" << mapCommand;
+    //qDebug() << "94 mapCommand" << mapCommand;
 
     // определяем команду запроса
     codeCommand = setCodeCommand(mapCommand["codeCommand"].toInt());
@@ -117,17 +117,25 @@ void session::readQueryWriteResponse()
             break;
             case setCodeCommand::Send:
             {
+                int roomID = 0;
                 sLogText = "query send message ";
                 QVariantMap mapData =  mapCommand["joDataInput"].toMap();
                 // получаем ответ из БД
                 //qDebug() << "mapData" << mapData;
-                QMap<int,QString> mapUserOnline;
-                mapUserOnline = sessionDB->readMessage(mapData["roomID"].toInt(),
-                                                        client.id,
+                QVariantMap mapUserOnline;
+                roomID = mapData["roomID"].toInt();
+                mapUserOnline = sessionDB->insertMessage(roomID, client.id,
                                                         mapData["text"].toString());
-                qDebug() << "126 mapUserOnline" <<mapUserOnline ;
-                mapResponse["roomID"] = mapData["roomID"].toInt();
-                emit notifyNewMessage(mapUserOnline,mapData["roomID"].toInt(),client.id);
+                //qDebug() << "126 mapUserOnline" <<mapUserOnline ;
+                QVariantMap mapTime;
+                QDateTime td;
+                td =td.currentDateTime();
+                QVariantMap mapMess;
+                mapMess["you"] = mapData["text"].toString();
+                mapTime[td.toString()] = mapMess;
+                mapResponse["cast"] = mapTime;
+                mapResponse["roomID"] = roomID;
+                emit notifyNewMessage(mapUserOnline,roomID,client.id);
             }
             break;
             case setCodeCommand::NewRoom:{
@@ -148,20 +156,6 @@ void session::readQueryWriteResponse()
                 emit notifyRoomRemoval(mapUserOnline, delRoomID);
                 break;
             }
-//            case setCodeCommand::CastMess:
-//            {
-//                QVariantMap mapData =  mapCommand["joDataInput"].toMap();
-//                // получаем ответ из БД
-//                //qDebug() << "mapData" << mapData;
-//                QMap<int,QString> mapUserOnline;
-//                mapUserOnline = sessionDB->readMessage(mapData["roomID"].toInt(),
-//                                                        client.id,
-//                                                        mapData["text"].toString());
-//                qDebug() << "160 mapUserOnline" <<mapUserOnline ;
-//                mapResponse["roomID"] = mapData["roomID"].toInt();
-//                emit notifyNewMessage(mapUserOnline,mapData["roomID"].toInt(),client.id);
-//                break;
-//            }
         }
     }
     //emit logQueryReaded(sLogText);

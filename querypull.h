@@ -17,8 +17,9 @@ public:
     QSqlQuery selectRooms(int id, int userRole);
     QSqlQuery selectUnreadMessages(int roomID);
     QSqlQuery selectReadMessages(int roomID);
-    QSqlQuery selectUserFromRoom(int roomID);
+    QSqlQuery selectUserFromRoom(int roomID, int senderID);
     QSqlQuery selectCastMessage(int roomID);
+    QSqlQuery selectUserName(int userID);
     bool delRoom(int roomID);
     bool insertMessage(int roomID, int userID, QString text);
     int getNewRoomID(int userID, QString roomName);
