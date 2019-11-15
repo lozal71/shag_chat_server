@@ -20,26 +20,26 @@ public:
     session(QTcpSocket *socket);
     int getIdClient();
     void broadCastDelRoom(QString text, int roomID);
-    void broadCast(QVariantMap mapTimeSenderMess, int roomID, int senderID);
+    void broadCast(QVariantMap mapRoomID);
 private:
     QTcpSocket *socketSession;
     protocolIn *in;
     protocolOut *out;
-    reciprocityDB *sessionDB;
+    reciprocityDB *db;
     struct dataClient{
         int id;
         //QVariantMap mapRooms;
     } client;
     void readQueryWriteResponse();
     void setConnectSession();
-
+    QVariantMap prepareResponseToSender(int roomID, QString text);
 signals:
     void connectClosed();
     void sessionClosed(int id);
     void logQueryReaded(const QString &text);
     void queryReaded(QVariantMap mapParam);
     void notifyRoomRemoval(QMap<int,QString> mapUserOnline, int delRoomID);
-    void notifyNewMessage(QVariantMap mapUserOnline, int roomID, int senderID);
+    void notifyNewMessage(QVariantMap mapUserOnline);
 };
 
 #endif // SESSION_H

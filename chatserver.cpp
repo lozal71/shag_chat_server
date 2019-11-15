@@ -44,17 +44,16 @@ void chatServer::seachSessionForDelRoom(QMap<int,QString> mapUserOnline, int roo
     }
 }
 
-void chatServer::seachSession(QVariantMap mapUserOnline, int roomID, int senderID)
+void chatServer::seachSession(QVariantMap mapUserOnline)
 {
     if (!mapUserOnline.isEmpty()){
         for (const QString& sID: mapUserOnline.keys()){
-            QMutableListIterator<session*> i(sessionList);
+            QListIterator<session*> i(sessionList);
             session* currentSession;
             while (i.hasNext()){
                 currentSession = i.next();
                 if (currentSession->getIdClient() == sID.toInt()){
-                    currentSession->broadCast(mapUserOnline[sID].toMap(),
-                                               roomID, senderID);
+                    currentSession->broadCast(mapUserOnline[sID].toMap());
                     break;
                 }
             }

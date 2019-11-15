@@ -2,13 +2,9 @@
 #define RECIPROCITYDB_H
 #include <QDir>
 #include <QFile>
-//#include <QSqlError>
-//#include <QSqlQuery>
-//#include <QSqlDatabase>
-//#include <QDebug>
 #include <QVariantMap>
-#include <QList>
 #include "querypull.h"
+
 
 class reciprocityDB: public QObject
 {
@@ -16,17 +12,17 @@ class reciprocityDB: public QObject
 public:
     reciprocityDB();
     QSqlDatabase chatDB;
-    QVariantMap mapResponseAuth(QString login, QString pass);
+    QVariantMap  mapResponseAuth(QString login, QString pass);
     void connectChatToDB();
     void setStatusOFFline(int id);
     QVariantMap insertMessage(int roomID, int userID, QString text);
     QVariantMap insertNewRoom(int userID, QString roomName);
     QMap<int,QString> delRoom(int roomID, int adminID);
-    //QVariantMap setMapCastMessages(int roomID);
 private:
-    QVariantMap setMapRooms(int id);
-    QVariantMap setMapMessages(int roomID);
-
+    QVariantMap setMapUserRole(int id);
+    QVariantMap setMapStatusMess(int roomID);
+    QVariantMap collectMapMessID(QSqlQuery qMessage);
+    QVariantMap collectMapRoomsID(QSqlQuery qUserRole);
 };
 
 #endif // RECIPROCITYDB_H

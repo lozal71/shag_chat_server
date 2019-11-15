@@ -21,21 +21,21 @@ queryPull::queryPull()
                             "INNER JOIN rooms on rooms.id = rooms_users.room_id "
                             "WHERE rooms_users.user_id = :id "
                             "AND rooms_users.user_role_id = 2 ";
-    mapSetQuery["selectUnreadMessages"] ="SELECT messages.time_sent, users.name, messages.text "
+    mapSetQuery["selectUnreadMessages"] = "SELECT "
+                                          "messages.id, messages.time_sent, users.name, messages.text "
+                                          "FROM messages "
+                                          "INNER JOIN users on users.id = messages.sender_id "
+                                          "WHERE messages.room_id = :roomID "
+                                          "AND "
+                                          "CAST(strftime('%s', messages.time_sent)  AS  integer) "
+                                          "> CAST(strftime('%s',  users.time_last_session)  AS  integer) ";
+    mapSetQuery["selectReadMessages"] ="SELECT messages.id, messages.time_sent, users.name, messages.text "
                                 "FROM messages "
                                 "INNER JOIN users on users.id = messages.sender_id "
                                 "WHERE messages.room_id = :roomID "
                                 "AND "
                                 "CAST(strftime('%s', messages.time_sent)  AS  integer) "
-                                "> CAST(strftime('%s',  users.time_last_session)  AS  integer) ";
-    mapSetQuery["selectReadMessages"] ="SELECT messages.time_sent, users.name, messages.text "
-                                "FROM messages "
-                                "INNER JOIN users on users.id = messages.sender_id "
-                                "WHERE messages.room_id = :roomID "
-                                "AND "
-                                "CAST(strftime('%s', messages.time_sent)  AS  integer) "
-                                "<= CAST(strftime('%s',  users.time_last_session)  AS  integer) "
-                                "LIMIT 5 OFFSET 5";
+                                "<= CAST(strftime('%s',  users.time_last_session)  AS  integer) ";
     mapSetQuery["insertNewMessage"] ="INSERT INTO messages "
                                      "(room_id, sender_id, text, time_sent) "
                                      "VALUES (:roomID, :senderID, :text, :td)";
@@ -58,10 +58,6 @@ queryPull::queryPull()
     mapSetQuery["delRoom"] = "DELETE FROM rooms WHERE rooms.id = :roomID ";
     mapSetQuery["delRoomFromRoomsUsers"] = "DELETE FROM rooms_users WHERE rooms_users.room_id = :roomID ";
     mapSetQuery["selectUserName"] = "SELECT name FROM users WHERE id = :userID ";
-//    mapSetQuery["selectCastMessage"] = "SELECT messages.time_sent, users.name, messages.text "
-//                                       "FROM messages "
-//                                       "INNER JOIN users on users.id = messages.sender_id "
-//                                       "WHERE messages.room_id = :roomID ";
 }
 
 QSqlQuery queryPull::auth(QString login, QString pass)
@@ -106,16 +102,22 @@ QSqlQuery queryPull::selectRooms(int id, int userRole)
     switch (userRole) {
     case 1:
         query.prepare(mapSetQuery["selectRoomsAdminRole"]);
+        query.bindValue(":id", id);
+        if (!query.exec())
+        {
+            qDebug() << mapSetQuery["selectRoomsAdminRole"] << query.lastError();
+        }
         break;
     case 2:
         query.prepare(mapSetQuery["selectRoomsUserRole"]);
+        query.bindValue(":id", id);
+        if (!query.exec())
+        {
+            qDebug() << mapSetQuery["selectRoomsUserRole"] << query.lastError();
+        }
         break;
     }
-    query.bindValue(":id", id);
-    if (!query.exec())
-    {
-        qDebug() << mapSetQuery["selectRooms"] << query.lastError();
-    }
+
     return query;
 }
 
