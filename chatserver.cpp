@@ -26,17 +26,22 @@ void chatServer::setConnectServer()
             db,&reciprocityDB::setStatusOFFline);
 }
 
-void chatServer::seachSessionForDelRoom(QMap<int,QString> mapUserOnline, int roomID)
+void chatServer::seachSessionForDelRoom(QList<int> listUserOnline, int roomID, QString roomName)
 {
-    if (!mapUserOnline.isEmpty()){
-        for (const int id: mapUserOnline.keys()){
-            QMutableListIterator<session*> i(sessionList);
-            session* currentSession;
-            while (i.hasNext()){
-                currentSession = i.next();
-                if (currentSession->getIdClient() == id){
-                    currentSession->broadCastDelRoom(mapUserOnline[id], roomID);
-                    break;
+    if (!listUserOnline.isEmpty()){
+        if (!listUserOnline.isEmpty()){
+            QListIterator<int> id(listUserOnline);
+            int currentID;
+            while (id.hasNext()){
+                currentID = id.next();
+                QListIterator<session*> i(sessionList);
+                session* currentSession;
+                while (i.hasNext()){
+                    currentSession = i.next();
+                    if (currentSession->getIdClient() == currentID){
+                        currentSession->broadCastDelRoom(roomName, roomID);
+                        break;
+                    }
                 }
             }
 
@@ -44,16 +49,20 @@ void chatServer::seachSessionForDelRoom(QMap<int,QString> mapUserOnline, int roo
     }
 }
 
-void chatServer::seachSession(QVariantMap mapUserOnline)
+void chatServer::seachSession(QList<int> listUserOnline, QString text,
+                              QString senderName, int roomID)
 {
-    if (!mapUserOnline.isEmpty()){
-        for (const QString& sID: mapUserOnline.keys()){
-            QListIterator<session*> i(sessionList);
+    if (!listUserOnline.isEmpty()){
+        QListIterator<int> id(listUserOnline);
+        int currentID;
+        while (id.hasNext()){
+            currentID = id.next();
+            QListIterator<session*> iSession(sessionList);
             session* currentSession;
-            while (i.hasNext()){
-                currentSession = i.next();
-                if (currentSession->getIdClient() == sID.toInt()){
-                    currentSession->broadCast(mapUserOnline[sID].toMap());
+            while (iSession.hasNext()){
+                currentSession = iSession.next();
+                if (currentSession->getIdClient() == currentID){
+                    currentSession->broadCast(text, senderName, roomID);
                     break;
                 }
             }

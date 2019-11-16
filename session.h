@@ -19,8 +19,8 @@ public:
     ~session();
     session(QTcpSocket *socket);
     int getIdClient();
-    void broadCastDelRoom(QString text, int roomID);
-    void broadCast(QVariantMap mapRoomID);
+    void broadCastDelRoom(QString roomName, int roomID);
+    void broadCast(QString text, QString senderName, int roomID);
 private:
     QTcpSocket *socketSession;
     protocolIn *in;
@@ -28,7 +28,7 @@ private:
     reciprocityDB *db;
     struct dataClient{
         int id;
-        //QVariantMap mapRooms;
+        QString name;
     } client;
     void readQueryWriteResponse();
     void setConnectSession();
@@ -38,8 +38,9 @@ signals:
     void sessionClosed(int id);
     void logQueryReaded(const QString &text);
     void queryReaded(QVariantMap mapParam);
-    void notifyRoomRemoval(QMap<int,QString> mapUserOnline, int delRoomID);
-    void notifyNewMessage(QVariantMap mapUserOnline);
+    void notifyRoomRemoval(QList<int> listUserOnline, int delRoomID, QString roomName);
+    void notifyNewMessage(QList<int> listUserOnline, QString text,
+                          QString senderName, int roomID);
 };
 
 #endif // SESSION_H

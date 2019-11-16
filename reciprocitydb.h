@@ -15,14 +15,14 @@ public:
     QVariantMap  mapResponseAuth(QString login, QString pass);
     void connectChatToDB();
     void setStatusOFFline(int id);
-    QVariantMap insertMessage(int roomID, int userID, QString text);
+    QList<int> insertMessage(int roomID, int senderID, QString text);
     QVariantMap insertNewRoom(int userID, QString roomName);
-    QMap<int,QString> delRoom(int roomID, int adminID);
+    QList<int> delRoom(int roomID, int adminID);
+    QString getRoomName(int roomID);
 private:
-    QVariantMap setMapUserRole(int id);
+    QVariantMap setMapRoomsID(int id);
     QVariantMap setMapStatusMess(int roomID);
     QVariantMap collectMapMessID(QSqlQuery qMessage);
-    QVariantMap collectMapRoomsID(QSqlQuery qUserRole);
 };
 
 #endif // RECIPROCITYDB_H

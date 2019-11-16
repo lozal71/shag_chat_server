@@ -56,8 +56,14 @@ queryPull::queryPull()
                                       "WHERE rooms_users.room_id = :roomID "
                                       "AND rooms_users.user_id != :senderID ";
     mapSetQuery["delRoom"] = "DELETE FROM rooms WHERE rooms.id = :roomID ";
+    mapSetQuery["selectRoomName"] = "SELECT name FROM rooms WHERE rooms.id = :roomID ";
     mapSetQuery["delRoomFromRoomsUsers"] = "DELETE FROM rooms_users WHERE rooms_users.room_id = :roomID ";
     mapSetQuery["selectUserName"] = "SELECT name FROM users WHERE id = :userID ";
+    mapSetQuery["selectRooms"]="SELECT rooms_users.room_id, rooms.name, rooms_users.user_role_id "
+                            "FROM rooms_users "
+                            "INNER JOIN rooms on rooms.id = rooms_users.room_id "
+                            "WHERE rooms_users.user_id = :id ";
+    mapSetQuery["selectRole"] = "SELECT users_role.role FROM users_role WHERE users_role.id =:roleID";
 }
 
 QSqlQuery queryPull::auth(QString login, QString pass)
@@ -97,27 +103,32 @@ QSqlQuery queryPull::userOffLine(int id)
     return query;
 }
 
-QSqlQuery queryPull::selectRooms(int id, int userRole)
+QSqlQuery queryPull::selectRooms(int id)
 {
-    switch (userRole) {
-    case 1:
-        query.prepare(mapSetQuery["selectRoomsAdminRole"]);
-        query.bindValue(":id", id);
-        if (!query.exec())
-        {
-            qDebug() << mapSetQuery["selectRoomsAdminRole"] << query.lastError();
-        }
-        break;
-    case 2:
-        query.prepare(mapSetQuery["selectRoomsUserRole"]);
-        query.bindValue(":id", id);
-        if (!query.exec())
-        {
-            qDebug() << mapSetQuery["selectRoomsUserRole"] << query.lastError();
-        }
-        break;
+//    switch (userRole) {
+//    case 1:
+//        query.prepare(mapSetQuery["selectRoomsAdminRole"]);
+//        query.bindValue(":id", id);
+//        if (!query.exec())
+//        {
+//            qDebug() << mapSetQuery["selectRoomsAdminRole"] << query.lastError();
+//        }
+//        break;
+//    case 2:
+//        query.prepare(mapSetQuery["selectRoomsUserRole"]);
+//        query.bindValue(":id", id);
+//        if (!query.exec())
+//        {
+//            qDebug() << mapSetQuery["selectRoomsUserRole"] << query.lastError();
+//        }
+//        break;
+//    }
+    query.prepare(mapSetQuery["selectRooms"]);
+    query.bindValue(":id", id);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectRooms"] << query.lastError();
     }
-
     return query;
 }
 
@@ -173,6 +184,28 @@ QSqlQuery queryPull::selectUserName(int userID)
     if (!query.exec())
     {
         qDebug() << mapSetQuery["selectUserName"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectRole(int roleID)
+{
+    query.prepare(mapSetQuery["selectRole"]);
+    query.bindValue(":roleID", roleID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectRole"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectRoomName(int roomID)
+{
+    query.prepare(mapSetQuery["selectRoomName"]);
+    query.bindValue(":roomID", roomID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectRoomName"] << query.lastError();
     }
     return query;
 }
