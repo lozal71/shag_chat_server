@@ -93,8 +93,25 @@ QString reciprocityDB::getRoomName(int roomID)
     while(qRoomName.next()){
         roomName = qRoomName.value(0).toString();
     }
-    qDebug() << "getRoomName roomName" << roomName;
+    //qDebug() << "getRoomName roomName" << roomName;
     return roomName;
+}
+
+int reciprocityDB::checktInvitedUser(QString userName, int roomID,
+                                     QString textInvite, int senderID)
+{
+    queryPull query;
+    QSqlQuery qUserStatusID = query.selectUserStatusID(userName);
+    int invitedUserID = 0;
+    int invitedUserStatusID = 0;
+    while (qUserStatusID.next()){
+        invitedUserID = qUserStatusID.value(0).toInt();
+        invitedUserStatusID = qUserStatusID.value(1).toInt();
+    }
+    if (invitedUserID != 0){
+        query.insertNewInvite(textInvite,roomID,senderID, invitedUserID);
+    }
+    return invitedUserID;
 }
 
 

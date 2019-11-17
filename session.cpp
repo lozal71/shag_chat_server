@@ -67,13 +67,30 @@ void session::broadCastDelRoom(QString roomName, int roomID)
 void session::broadCast(QString text, QString senderName, int roomID)
 {
     QVariantMap mapCommand;
-    QVariantMap mapData; // {"cast":{mapCastMessage},
+    QVariantMap mapData;
     mapCommand["codeCommand"] = setCodeCommand::CastMess;
     QDateTime td;
     td = td.currentDateTime();
     mapData["timeMess"] = td;
     mapData["textMess"] = text;
     mapData["senderName"] = senderName;
+    mapData["roomID"] = roomID;
+    mapCommand["joDataInput"] = mapData;
+    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
+   // qDebug() << "client.id"  << client.id;
+    qDebug() << " broadcast jdResponse" << jdResponse;
+    out->setPackage(jdResponse);
+    socketSession->write(out->getPackage());
+}
+
+void session::sendInvite(QString senderName, QString textInvite, QString roomName, int roomID)
+{
+    QVariantMap mapCommand;
+    QVariantMap mapData;
+    mapCommand["codeCommand"] = setCodeCommand::questInvite;
+    mapData["textInvite"] = textInvite;
+    mapData["senderName"] = senderName;
+    mapData["roomName"] = roomName;
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
@@ -157,6 +174,22 @@ void session::readQueryWriteResponse()
                 listUserOnline = db->delRoom(delRoomID, client.id);
                 mapResponse["delRoomID"] = delRoomID;
                 emit notifyRoomRemoval(listUserOnline, delRoomID, roomName);
+                break;
+            }
+            case setCodeCommand::Invite:{
+                sLogText = "query invite ";
+                QVariantMap mapData =  mapCommand["joDataInput"].toMap();
+                int invitedUserID = db->checktInvitedUser(mapData["username"].toString(),
+                                                        mapData["roomID"].toInt(),
+                                                        mapData["textInvite"].toString(),
+                                                        client.id);
+                QString roomName = db->getRoomName(mapData["roomID"].toInt());
+                mapResponse["existUser"] = invitedUserID;
+                if (invitedUserID != 0){
+                    emit sendInviteUser(invitedUserID, client.name, roomName,
+                                        mapData["textInvite"].toString(),
+                                        mapData["roomID"].toInt());
+                }
                 break;
             }
         }

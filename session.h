@@ -8,8 +8,8 @@
 #include "protocol_out.h"
 #include "reciprocitydb.h"
 
-
-enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3, DelRoom = 4, CastDelRoom = 5, CastMess = 6};
+enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3, DelRoom = 4,
+                     CastDelRoom = 5, CastMess = 6, Invite = 7, questInvite = 8};
 
 class session: public QObject
 {
@@ -21,6 +21,7 @@ public:
     int getIdClient();
     void broadCastDelRoom(QString roomName, int roomID);
     void broadCast(QString text, QString senderName, int roomID);
+    void sendInvite(QString senderName, QString textInvite, QString roomName, int roomID);
 private:
     QTcpSocket *socketSession;
     protocolIn *in;
@@ -41,6 +42,8 @@ signals:
     void notifyRoomRemoval(QList<int> listUserOnline, int delRoomID, QString roomName);
     void notifyNewMessage(QList<int> listUserOnline, QString text,
                           QString senderName, int roomID);
+    void sendInviteUser(int invitedUserID, QString senderName,
+                        QString roomName, QString textInvite, int roomID);
 };
 
 #endif // SESSION_H

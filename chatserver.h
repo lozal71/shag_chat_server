@@ -25,6 +25,8 @@ private:
     void seachSessionForDelRoom(QList<int> listUserOnline, int roomID, QString roomName);
     void seachSession(QList<int> listUserOnline, QString text,
                       QString senderName, int roomID);
+    void seachSessioForInvite(int invitedUserID, QString senderName,
+                              QString roomName, QString textInvite, int roomID);
     QObject *mainWindow;
     const char* logSlot;
 
