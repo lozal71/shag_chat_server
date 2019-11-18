@@ -40,8 +40,12 @@ queryPull::queryPull()
                                      "(room_id, sender_id, text, time_sent) "
                                      "VALUES (:roomID, :senderID, :text, :td)";
     mapSetQuery["insertNewInvite"] ="INSERT INTO invitations "
-                                     "(text, room_id, sender_id, receiver_id, 3) "
-                                     "VALUES (:roomID, :senderID, :text, :td)";
+                                     "(text, room_id, sender_id, receiver_id, status_id) "
+                                     "VALUES (:text, :roomID, :senderID, :receiverID, 3)";
+    mapSetQuery["selectInvite"] = "SELECT id, text, room_id, sender_id "
+                                  "FROM invitations "
+                                  "WHERE invitations.receiver_id =:receiverID "
+                                  "AND invitations.status_id = 3";
     mapSetQuery["insertNewRoom"] ="INSERT INTO rooms "
                                   "(name, users_count) "
                                   "VALUES (:roomName, 1) ";
@@ -65,12 +69,15 @@ queryPull::queryPull()
     mapSetQuery["selectRoomName"] = "SELECT name FROM rooms WHERE rooms.id = :roomID ";
     mapSetQuery["delRoomFromRoomsUsers"] = "DELETE FROM rooms_users WHERE rooms_users.room_id = :roomID ";
     mapSetQuery["selectUserName"] = "SELECT name FROM users WHERE id = :userID ";
-    mapSetQuery["selectUserStatusID"] = "SELECT id, status FROM users WHERE name = :userName ";
+    mapSetQuery["selectUserStatusID"] = "SELECT id, status "
+                                        "FROM users "
+                                        "WHERE users.name = :userName";
     mapSetQuery["selectRooms"]="SELECT rooms_users.room_id, rooms.name, rooms_users.user_role_id "
                             "FROM rooms_users "
                             "INNER JOIN rooms on rooms.id = rooms_users.room_id "
                             "WHERE rooms_users.user_id = :id ";
     mapSetQuery["selectRole"] = "SELECT users_role.role FROM users_role WHERE users_role.id =:roleID";
+
 }
 
 QSqlQuery queryPull::auth(QString login, QString pass)
@@ -201,11 +208,11 @@ QSqlQuery queryPull::selectRoomName(int roomID)
 
 QSqlQuery queryPull::selectUserStatusID(QString userName)
 {
-    query.prepare(mapSetQuery["selectUserID"]);
-    query.bindValue(":name", userName);
+    query.prepare(mapSetQuery["selectUserStatusID"]);
+    query.bindValue(":userName", userName);
     if (!query.exec())
     {
-        qDebug() << mapSetQuery["selectUserID"] << query.lastError();
+        qDebug() << mapSetQuery["selectUserStatusID"] << query.lastError();
     }
     return query;
 }
@@ -234,6 +241,17 @@ QSqlQuery queryPull::insertNewInvite(QString text, int roomID,
     if (!query.exec())
     {
         qDebug() << mapSetQuery["insertNewInvite"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectInvite(int receiverID)
+{
+    query.prepare(mapSetQuery["selectInvite"]);
+    query.bindValue(":receiverID", receiverID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectInvite"] << query.lastError();
     }
     return query;
 }

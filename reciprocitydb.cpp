@@ -103,15 +103,44 @@ int reciprocityDB::checktInvitedUser(QString userName, int roomID,
     queryPull query;
     QSqlQuery qUserStatusID = query.selectUserStatusID(userName);
     int invitedUserID = 0;
-    int invitedUserStatusID = 0;
+    //int invitedUserStatusID = 0;
     while (qUserStatusID.next()){
         invitedUserID = qUserStatusID.value(0).toInt();
-        invitedUserStatusID = qUserStatusID.value(1).toInt();
-    }
-    if (invitedUserID != 0){
-        query.insertNewInvite(textInvite,roomID,senderID, invitedUserID);
+        query.insertNewInvite(textInvite, roomID, senderID, invitedUserID);
+        //invitedUserStatusID = qUserStatusID.value(1).toInt();
     }
     return invitedUserID;
+}
+
+QVariantMap reciprocityDB::getInvitations(int userID)
+{
+    QVariantMap mapInvitations;
+    QVariantMap mapInvite;
+    int inviteID =0;
+    int roomID = 0;
+    int senderID = 0;
+    QString roomName;
+    QString senderName;
+    queryPull query;
+    QSqlQuery qInvtations = query.selectInvite(userID);
+    while (qInvtations.next()){
+        inviteID = qInvtations.value(0).toInt();
+        mapInvite.insert("text", qInvtations.value(1).toString());
+        roomID = qInvtations.value(2).toInt();
+        QSqlQuery qRoomName = query.selectRoomName(roomID);
+        while(qRoomName.next()){
+            roomName = qRoomName.value(0).toString();
+        }
+        mapInvite.insert("roomName", roomName);
+        senderID = qInvtations.value(3).toInt();
+        QSqlQuery qUserName = query.selectUserName(senderID);
+        while (qUserName.next()){
+            senderName = qUserName.value(0).toString();
+        }
+        mapInvite.insert("senderName",senderName);
+        mapInvitations.insert(QString::number(inviteID), mapInvite);
+    }
+    return  mapInvitations;
 }
 
 

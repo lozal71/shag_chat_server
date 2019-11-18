@@ -95,7 +95,7 @@ void session::sendInvite(QString senderName, QString textInvite, QString roomNam
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
    // qDebug() << "client.id"  << client.id;
-    qDebug() << " broadcast jdResponse" << jdResponse;
+    qDebug() << " sendInvite" << jdResponse;
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }
@@ -136,9 +136,11 @@ void session::readQueryWriteResponse()
                 sLogText += login + "," + pass + "\n";
                 // получаем ответ из БД
                 mapResponse = db->mapResponseAuth(login, pass);
-                // фиксируем в id и имя клиента
+
+                // фиксируем id и имя клиента
                 this->client.id = mapResponse["userID"].toInt();
                 this->client.name = mapResponse["userName"].toString();
+                mapResponse["invite"] = db->getInvitations(this->client.id);
             }
             break;
             case setCodeCommand::Send:
@@ -184,7 +186,8 @@ void session::readQueryWriteResponse()
                                                         mapData["textInvite"].toString(),
                                                         client.id);
                 QString roomName = db->getRoomName(mapData["roomID"].toInt());
-                mapResponse["existUser"] = invitedUserID;
+                mapResponse["invitedUserID"] = invitedUserID;
+                mapResponse["invitedUserName"] = mapData["username"].toString();
                 if (invitedUserID != 0){
                     emit sendInviteUser(invitedUserID, client.name, roomName,
                                         mapData["textInvite"].toString(),
@@ -197,7 +200,7 @@ void session::readQueryWriteResponse()
     // преобразуем в JSON-формат
     mapCommand["joDataInput"]=mapResponse;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-    qDebug() << "jdResponse" << jdResponse;
+    //qDebug() << "jdResponse" << jdResponse;
 
     // отправляем в сокет
     out->setPackage(jdResponse);

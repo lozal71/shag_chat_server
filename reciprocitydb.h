@@ -20,6 +20,7 @@ public:
     QList<int> delRoom(int roomID, int adminID);
     QString getRoomName(int roomID);
     int checktInvitedUser(QString userName, int roomID, QString textInvite, int senderID);
+    QVariantMap getInvitations(int userID);
 private:
     QVariantMap setMapRoomsID(int id);
     QVariantMap setMapStatusMess(int roomID);
