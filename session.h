@@ -23,7 +23,8 @@ public:
     int getIdClient();
     void broadCastDelRoom(QString roomName, int roomID);
     void broadCast(QString text, QString senderName, int roomID);
-    void sendInvite(QString senderName, QString textInvite, QString roomName, int roomID);
+    //void sendInvite(QString senderName, QString textInvite, QString roomName, int roomID);
+    void sendInvite();
 private:
     QTcpSocket *socketSession;
     protocolIn *in;

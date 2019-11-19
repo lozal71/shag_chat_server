@@ -83,15 +83,18 @@ void session::broadCast(QString text, QString senderName, int roomID)
     socketSession->write(out->getPackage());
 }
 
-void session::sendInvite(QString senderName, QString textInvite, QString roomName, int roomID)
+//void session::sendInvite(QString senderName, QString textInvite, QString roomName, int roomID)
+void session::sendInvite()
 {
     QVariantMap mapCommand;
     QVariantMap mapData;
+    mapData["invite"] = db->getInvitations(this->client.id);
+    qDebug() << "mapData[\"invite\"]" << mapData["invite"];
     mapCommand["codeCommand"] = setCodeCommand::questInvite;
-    mapData["textInvite"] = textInvite;
-    mapData["senderName"] = senderName;
-    mapData["roomName"] = roomName;
-    mapData["roomID"] = roomID;
+//    mapData["textInvite"] = textInvite;
+//    mapData["senderName"] = senderName;
+//    mapData["roomName"] = roomName;
+//    mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
    // qDebug() << "client.id"  << client.id;
@@ -183,18 +186,19 @@ void session::readQueryWriteResponse()
         {
             sLogText = "query invite ";
             QVariantMap mapData =  mapCommand["joDataInput"].toMap();
-            int invitedUserID = db->checktInvitedUser(mapData["username"].toString(),
-                                                    mapData["roomID"].toInt(),
-                                                    mapData["textInvite"].toString(),
-                                                    client.id);
-            QString roomName = db->getRoomName(mapData["roomID"].toInt());
+            int invitedUserID = 0;
+            invitedUserID = db->getUserID(mapData["userName"].toString());
             mapResponse["invitedUserID"] = invitedUserID;
-            mapResponse["invitedUserName"] = mapData["username"].toString();
-            if (invitedUserID != 0){
+            mapResponse["invitedUserName"] = mapData["userName"].toString();
+            if (invitedUserID !=0)
+            {
+                QString roomName = db->getRoomName(mapData["roomID"].toInt());
+                db->insertNewInvite(mapData["textInvite"].toString(),
+                                    mapData["roomID"].toInt(),
+                                    client.id, (invitedUserID));
                 emit sendInviteUser(invitedUserID, client.name, roomName,
-                                    mapData["textInvite"].toString(),
-                                    mapData["roomID"].toInt());
-
+                                        mapData["textInvite"].toString(),
+                                        mapData["roomID"].toInt());
             }
             break;
         }
@@ -203,11 +207,12 @@ void session::readQueryWriteResponse()
             sLogText = "query acceptInvite ";
             QVariantMap mapData =  mapCommand["joDataInput"].toMap();
             int roomID = mapData["roomID"].toInt();
-            int invitedID = mapData["inviteID"].toInt();
+            int invitedID = mapData["invitedID"].toInt();
             QString userName = mapData["userName"].toString();
             mapResponse["mess"] = db->acceptInvite(invitedID,roomID, client.id);
             mapResponse["roomID"] = roomID;
             mapResponse["roomName"] = mapData["roomName"].toString();
+            mapResponse["invitedID"] = invitedID;
             // получаем ответ из БД о пользователях - онлайн
             QList<int> listUserOnline;
             listUserOnline = db->insertMessage(roomID,
@@ -225,7 +230,7 @@ void session::readQueryWriteResponse()
     // преобразуем в JSON-формат
     mapCommand["joDataInput"]=mapResponse;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-    //qDebug() << "jdResponse" << jdResponse;
+    qDebug() << "jdResponse" << jdResponse;
 
     // отправляем в сокет
     out->setPackage(jdResponse);

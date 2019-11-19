@@ -71,15 +71,17 @@ void chatServer::seachSession(QList<int> listUserOnline, QString text,
     }
 }
 
-void chatServer::seachSessioForInvite(int invitedUserID, QString senderName,
-                                      QString roomName, QString textInvite, int roomID)
+//void chatServer::seachSessioForInvite(int invitedUserID, QString senderName,
+//                                      QString roomName, QString textInvite, int roomID)
+void chatServer::seachSessioForInvite(int invitedUserID)
 {
     QListIterator<session*> iSession(sessionList);
     session* currentSession;
     while (iSession.hasNext()){
         currentSession = iSession.next();
         if (currentSession->getIdClient() ==invitedUserID){
-            currentSession->sendInvite(senderName, textInvite, roomName, roomID);
+//            currentSession->sendInvite(senderName, textInvite, roomName, roomID);
+            currentSession->sendInvite();
             break;
         }
     }

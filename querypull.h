@@ -22,12 +22,13 @@ public:
     QSqlQuery selectUserName(int userID);
     QSqlQuery selectRole(int roleID);
     QSqlQuery selectRoomName(int roomID);
-    QSqlQuery selectUserStatusID(QString userName);
+    QSqlQuery selectUserID(QString userName);
     QSqlQuery insertInvitedUsers(int roomID, int userID, int statusID);
     QSqlQuery insertNewInvite(QString text, int roomID, int senderID,
                               int receiverID);
     QSqlQuery updateInviteAccept(int inviteID);
-    QSqlQuery selectInvite (int receiverID);
+    QSqlQuery selectInvitations (int receiverID);
+    QSqlQuery selectWaitInvitations();
     bool delRoom(int roomID);
     bool insertMessage(int roomID, int userID, QString text);
     int getNewRoomID(int userID, QString roomName);
