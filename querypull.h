@@ -26,6 +26,7 @@ public:
     QSqlQuery insertInvitedUsers(int roomID, int userID, int statusID);
     QSqlQuery insertNewInvite(QString text, int roomID, int senderID,
                               int receiverID);
+    QSqlQuery updateInviteAccept(int inviteID);
     QSqlQuery selectInvite (int receiverID);
     bool delRoom(int roomID);
     bool insertMessage(int roomID, int userID, QString text);

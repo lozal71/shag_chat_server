@@ -127,12 +127,14 @@ QVariantMap reciprocityDB::getInvitations(int userID)
         inviteID = qInvtations.value(0).toInt();
         mapInvite.insert("text", qInvtations.value(1).toString());
         roomID = qInvtations.value(2).toInt();
+        mapInvite["roomID"] = roomID;
         QSqlQuery qRoomName = query.selectRoomName(roomID);
         while(qRoomName.next()){
             roomName = qRoomName.value(0).toString();
         }
         mapInvite.insert("roomName", roomName);
         senderID = qInvtations.value(3).toInt();
+        mapInvite["senderID"] = senderID;
         QSqlQuery qUserName = query.selectUserName(senderID);
         while (qUserName.next()){
             senderName = qUserName.value(0).toString();
@@ -141,6 +143,16 @@ QVariantMap reciprocityDB::getInvitations(int userID)
         mapInvitations.insert(QString::number(inviteID), mapInvite);
     }
     return  mapInvitations;
+}
+
+QVariantMap reciprocityDB::acceptInvite(int inviteID, int roomID, int userID)
+{
+    QVariantMap mapMess;
+    queryPull query;
+    query.updateInviteAccept(inviteID);
+    query.insertInvitedUsers(roomID, userID, 1);
+    mapMess = setMapStatusMess(roomID);
+    return mapMess;
 }
 
 

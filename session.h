@@ -9,7 +9,9 @@
 #include "reciprocitydb.h"
 
 enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3, DelRoom = 4,
-                     CastDelRoom = 5, CastMess = 6, Invite = 7, questInvite = 8};
+                     CastDelRoom = 5, CastMess = 6, Invite = 7, questInvite = 8,
+                    acceptInvite = 9};
+
 
 class session: public QObject
 {

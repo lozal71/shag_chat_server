@@ -58,6 +58,9 @@ queryPull::queryPull()
     mapSetQuery["insertInvitedUsers"] = " INSERT INTO rooms_users "
                                         "(room_id, user_id, user_status_id, user_role_id) "
                                         "VALUES  (:roomID, :userID, :statusID, 2) ";
+    mapSetQuery["updateInviteAccept"] = "UPDATE invitations "
+                                        "SET status_id = 1 "
+                                        "WHERE id = :inviteID";
     mapSetQuery["selectUserFromRoom"] = "SELECT "
                                       "rooms_users.user_id, rooms.name, "
                                       "rooms_users.user_status_id, rooms_users.room_id "
@@ -241,6 +244,17 @@ QSqlQuery queryPull::insertNewInvite(QString text, int roomID,
     if (!query.exec())
     {
         qDebug() << mapSetQuery["insertNewInvite"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::updateInviteAccept(int inviteID)
+{
+    query.prepare(mapSetQuery["updateInviteAccept"]);
+    query.bindValue(":inviteID", inviteID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["updateInviteAccept"] << query.lastError();
     }
     return query;
 }
