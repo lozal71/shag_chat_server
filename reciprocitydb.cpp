@@ -97,6 +97,17 @@ QString reciprocityDB::getRoomName(int roomID)
     return roomName;
 }
 
+QString reciprocityDB::getUserName(int userID)
+{
+    QString userName;
+    queryPull query;
+    QSqlQuery qUserName = query.selectUserName(userID);
+    while (qUserName.next()){
+        userName = qUserName.value(0).toString();
+    }
+    return userName;
+}
+
 int reciprocityDB::getInvitedUserID(QString userName, int roomID)
 {
     queryPull query;
@@ -160,6 +171,17 @@ void reciprocityDB::insertNewInvite(QString text, int roomID, int senderID, int 
     QSqlQuery qinsertNewInvite = query.insertNewInvite(text,roomID,senderID,receiverID);
 }
 
+QVariantMap reciprocityDB::getUserIdNameFromRoom(int roomID, int adminID)
+{
+    QVariantMap temp;
+    queryPull query;
+    QSqlQuery qUser = query.selectUserIdNameFromRoom(roomID, adminID);
+    while (qUser.next()){
+        temp.insert(qUser.value(0).toString(), qUser.value(1).toString());
+    }
+    return temp;
+}
+
 QVariantMap reciprocityDB::getInvitations(int userID)
 {
     QVariantMap mapInvitations;
@@ -208,6 +230,12 @@ void reciprocityDB::rejectInvite(int inviteID)
 {
     queryPull query;
     query.updateInvite(inviteID,2);
+}
+
+void reciprocityDB::deleteUser(int userID, int roomID)
+{
+    queryPull query;
+    QSqlQuery qDel=query.deleteUser(userID,roomID);
 }
 
 void reciprocityDB::connectChatToDB()

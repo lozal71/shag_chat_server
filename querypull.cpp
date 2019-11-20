@@ -108,6 +108,14 @@ queryPull::queryPull()
                                            "FROM rooms "
                                            "INNER JOIN invitations on invitations.room_id = rooms.id "
                                            "WHERE invitations.id = :inviteID ";
+    mapSetQuery["selectUserIdNameFromRoom"] = "SELECT users.id, users.name "
+                                              "FROM rooms_users "
+                                              "INNER JOIN users on users.id = rooms_users.user_id "
+                                              "WHERE rooms_users.room_id = :roomID "
+                                              "AND users.id != :adminID";
+    mapSetQuery["deleteUser"] = "DELETE FROM rooms_users "
+                                "WHERE rooms_users.user_id = :userID "
+                                "AND rooms_users.room_id = :roomID";
 }
 
 QSqlQuery queryPull::auth(QString login, QString pass)
@@ -359,6 +367,30 @@ QSqlQuery queryPull::selectInvitedRoomName(int inviteID)
     if (!query.exec())
     {
         qDebug() << mapSetQuery["selectInvitedRoomName"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectUserIdNameFromRoom(int roomID, int adminID)
+{
+    query.prepare(mapSetQuery["selectUserIdNameFromRoom"]);
+    query.bindValue(":roomID", roomID);
+    query.bindValue(":adminID", adminID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectUserIdNameFromRoom"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::deleteUser(int userID, int roomID)
+{
+    query.prepare(mapSetQuery["deleteUser"]);
+    query.bindValue(":userID", userID);
+    query.bindValue(":roomID", roomID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["deleteUser"] << query.lastError();
     }
     return query;
 }

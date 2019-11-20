@@ -19,15 +19,18 @@ public:
     QVariantMap insertNewRoom(int userID, QString roomName);
     QList<int> delRoom(int roomID, int adminID);
     QString getRoomName(int roomID);
+    QString getUserName(int userID);
     int getInvitedUserID(QString userName, int roomID);
     int getIdSenderInvite(int inviteID);
     QString getInvitedName(int inviteID);
     QMap<int, QString> getInvitedRoom(int inviteID);
     void insertNewInvite(QString text, int roomID, int senderID,
                       int receiverID);
+    QVariantMap getUserIdNameFromRoom(int roomID, int adminID);
     QVariantMap getInvitations(int userID);
     QVariantMap acceptInvite(int inviteID, int roomID, int userID);
     void rejectInvite(int inviteID);
+    void deleteUser(int userID, int roomID);
 private:
     QVariantMap setMapRoomsID(int id);
     QVariantMap setMapStatusMess(int roomID);

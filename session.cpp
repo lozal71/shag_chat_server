@@ -89,26 +89,7 @@ void session::sendInvite()
     QVariantMap mapCommand;
     QVariantMap mapData;
     mapData["invite"] = db->getInvitations(this->client.id);
-    //qDebug() << "mapData[\"invite\"]" << mapData["invite"];
     mapCommand["codeCommand"] = setCodeCommand::questInvite;
-//    mapData["textInvite"] = textInvite;
-//    mapData["senderName"] = senderName;
-//    mapData["roomName"] = roomName;
-//    mapData["roomID"] = roomID;
-    mapCommand["joDataInput"] = mapData;
-    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-   // qDebug() << "client.id"  << client.id;
-    //qDebug() << " sendInvite" << jdResponse;
-    out->setPackage(jdResponse);
-    socketSession->write(out->getPackage());
-}
-
-void session::sendRejectInvite(QString invitedName, QString roomName)
-{
-    QVariantMap mapCommand;
-    QVariantMap mapData;
-    mapCommand["codeCommand"] = setCodeCommand::notifyRejectInvite;
-    mapData["textReject"] = invitedName + " reject invite in room " + roomName;
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
    // qDebug() << "client.id"  << client.id;
@@ -246,21 +227,46 @@ void session::readQueryWriteResponse()
             QVariantMap mapData =  mapCommand["joDataInput"].toMap();
             int inviteID = mapData["inviteID"].toInt();
             db->rejectInvite(inviteID);
-            //int idSenderInvite = db->getIdSenderInvite(inviteID);
-            //QString invitedName = db->getInvitedName(inviteID);
             QMap<int, QString> room = db->getInvitedRoom(inviteID);
-            //emit notifyRejectInvite(idSenderInvite, invitedName, roomName);
-
             QList<int> listUserOnline;
             QString text = client.name + " reject invite in " + room.first();
             listUserOnline = db->insertMessage(room.firstKey(), client.id, text);
             // испускаем сигнал о необходимости уведомления
             // пользователей-онлайн о новом сообщении
             emit notifyNewMessage(listUserOnline, text, client.name, room.firstKey());
-
-
-
             mapResponse["inviteID"] = inviteID;
+            break;
+        }
+        case setCodeCommand::userInRoom:
+        {
+            sLogText = "query userInRoom";
+            QVariantMap mapData =  mapCommand["joDataInput"].toMap();
+            int roomID = mapData["roomID"].toInt();
+            QVariantMap mapUsers = db->getUserIdNameFromRoom(roomID, client.id);
+            mapResponse["users"] = mapUsers;
+            mapResponse["roomID"] = roomID;
+            break;
+        }
+        case setCodeCommand::delUser:
+        {
+            sLogText = "query delete user";
+            QVariantMap mapData =  mapCommand["joDataInput"].toMap();
+            int roomID = mapData["roomID"].toInt();
+            int userID =  mapData["userID"].toInt();
+            QString roomName = db->getRoomName(roomID);
+            QString userName = db->getUserName(userID);
+            QList<int> listUserOnline;
+            QString text = client.name + " deleted user " + userName
+                            + " from " + roomName + " text: " +
+                            mapData["text"].toString();
+            listUserOnline = db->insertMessage(roomID, client.id, text);
+            qDebug() << "listUserOnline" << listUserOnline ;
+            // испускаем сигнал о необходимости уведомления
+            // пользователей-онлайн о новом сообщении
+            emit notifyNewMessage(listUserOnline, text, client.name, roomID);
+            db->deleteUser(userID, roomID);
+            // готовим ответ пославшему сообщение
+            mapResponse = prepareResponseToSender(roomID, text);
             break;
         }
         }

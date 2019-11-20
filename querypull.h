@@ -34,6 +34,8 @@ public:
     QSqlQuery selectIdSenderInvite(int inviteID);
     QSqlQuery selectInvitedUserName(int inviteID);
     QSqlQuery selectInvitedRoomName(int inviteID);
+    QSqlQuery selectUserIdNameFromRoom(int roomID, int adminID);
+    QSqlQuery deleteUser(int userID, int roomID);
     bool delRoom(int roomID);
     bool insertMessage(int roomID, int userID, QString text);
     int getNewRoomID(int userID, QString roomName);

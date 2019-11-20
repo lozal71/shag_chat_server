@@ -7,6 +7,7 @@ protocolOut::protocolOut()
 
 QByteArray protocolOut::getPackage()
 {
+    qDebug() << "baPackage" <<baPackage ;
     return baPackage;
 }
 

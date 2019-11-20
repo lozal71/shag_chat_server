@@ -10,7 +10,8 @@
 
 enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3, DelRoom = 4,
                      CastDelRoom = 5, CastMess = 6, Invite = 7, questInvite = 8,
-                     acceptInvite = 9, rejectInvite = 10, notifyRejectInvite = 11};
+                     acceptInvite = 9, rejectInvite = 10, delUser = 11,
+                     userInRoom = 12};
 
 
 class session: public QObject
