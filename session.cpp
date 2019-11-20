@@ -89,7 +89,7 @@ void session::sendInvite()
     QVariantMap mapCommand;
     QVariantMap mapData;
     mapData["invite"] = db->getInvitations(this->client.id);
-    qDebug() << "mapData[\"invite\"]" << mapData["invite"];
+    //qDebug() << "mapData[\"invite\"]" << mapData["invite"];
     mapCommand["codeCommand"] = setCodeCommand::questInvite;
 //    mapData["textInvite"] = textInvite;
 //    mapData["senderName"] = senderName;
@@ -98,7 +98,21 @@ void session::sendInvite()
     mapCommand["joDataInput"] = mapData;
     QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
    // qDebug() << "client.id"  << client.id;
-    qDebug() << " sendInvite" << jdResponse;
+    //qDebug() << " sendInvite" << jdResponse;
+    out->setPackage(jdResponse);
+    socketSession->write(out->getPackage());
+}
+
+void session::sendRejectInvite(QString invitedName, QString roomName)
+{
+    QVariantMap mapCommand;
+    QVariantMap mapData;
+    mapCommand["codeCommand"] = setCodeCommand::notifyRejectInvite;
+    mapData["textReject"] = invitedName + " reject invite in room " + roomName;
+    mapCommand["joDataInput"] = mapData;
+    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
+   // qDebug() << "client.id"  << client.id;
+    //qDebug() << " sendInvite" << jdResponse;
     out->setPackage(jdResponse);
     socketSession->write(out->getPackage());
 }
@@ -187,10 +201,11 @@ void session::readQueryWriteResponse()
             sLogText = "query invite ";
             QVariantMap mapData =  mapCommand["joDataInput"].toMap();
             int invitedUserID = 0;
-            invitedUserID = db->getUserID(mapData["userName"].toString());
+            invitedUserID = db->getInvitedUserID(mapData["userName"].toString(),
+                                            mapData["roomID"].toInt());
             mapResponse["invitedUserID"] = invitedUserID;
             mapResponse["invitedUserName"] = mapData["userName"].toString();
-            if (invitedUserID !=0)
+            if (invitedUserID !=0 and invitedUserID != -1)
             {
                 QString roomName = db->getRoomName(mapData["roomID"].toInt());
                 db->insertNewInvite(mapData["textInvite"].toString(),
@@ -207,12 +222,12 @@ void session::readQueryWriteResponse()
             sLogText = "query acceptInvite ";
             QVariantMap mapData =  mapCommand["joDataInput"].toMap();
             int roomID = mapData["roomID"].toInt();
-            int invitedID = mapData["invitedID"].toInt();
+            int inviteID = mapData["inviteID"].toInt();
             QString userName = mapData["userName"].toString();
-            mapResponse["mess"] = db->acceptInvite(invitedID,roomID, client.id);
+            mapResponse["mess"] = db->acceptInvite(inviteID,roomID, client.id);
             mapResponse["roomID"] = roomID;
             mapResponse["roomName"] = mapData["roomName"].toString();
-            mapResponse["invitedID"] = invitedID;
+            mapResponse["inviteID"] = inviteID;
             // получаем ответ из БД о пользователях - онлайн
             QList<int> listUserOnline;
             listUserOnline = db->insertMessage(roomID,
@@ -223,6 +238,29 @@ void session::readQueryWriteResponse()
             emit notifyNewMessage(listUserOnline,
                                   userName + " accept invite",
                                   client.name, roomID);
+            break;
+        }
+        case setCodeCommand::rejectInvite:
+        {
+            sLogText = "query rejectInvite ";
+            QVariantMap mapData =  mapCommand["joDataInput"].toMap();
+            int inviteID = mapData["inviteID"].toInt();
+            db->rejectInvite(inviteID);
+            //int idSenderInvite = db->getIdSenderInvite(inviteID);
+            //QString invitedName = db->getInvitedName(inviteID);
+            QMap<int, QString> room = db->getInvitedRoom(inviteID);
+            //emit notifyRejectInvite(idSenderInvite, invitedName, roomName);
+
+            QList<int> listUserOnline;
+            QString text = client.name + " reject invite in " + room.first();
+            listUserOnline = db->insertMessage(room.firstKey(), client.id, text);
+            // испускаем сигнал о необходимости уведомления
+            // пользователей-онлайн о новом сообщении
+            emit notifyNewMessage(listUserOnline, text, client.name, room.firstKey());
+
+
+
+            mapResponse["inviteID"] = inviteID;
             break;
         }
         }

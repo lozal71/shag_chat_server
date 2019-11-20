@@ -10,7 +10,7 @@
 
 enum setCodeCommand {Auth = 1, Send = 2, NewRoom = 3, DelRoom = 4,
                      CastDelRoom = 5, CastMess = 6, Invite = 7, questInvite = 8,
-                    acceptInvite = 9};
+                     acceptInvite = 9, rejectInvite = 10, notifyRejectInvite = 11};
 
 
 class session: public QObject
@@ -25,6 +25,7 @@ public:
     void broadCast(QString text, QString senderName, int roomID);
     //void sendInvite(QString senderName, QString textInvite, QString roomName, int roomID);
     void sendInvite();
+    void sendRejectInvite(QString invitedName, QString roomName);
 private:
     QTcpSocket *socketSession;
     protocolIn *in;
@@ -47,6 +48,7 @@ signals:
                           QString senderName, int roomID);
     void sendInviteUser(int invitedUserID, QString senderName,
                         QString roomName, QString textInvite, int roomID);
+    void notifyRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
 };
 
 #endif // SESSION_H

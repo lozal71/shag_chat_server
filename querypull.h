@@ -18,6 +18,7 @@ public:
     QSqlQuery selectUnreadMessages(int roomID);
     QSqlQuery selectReadMessages(int roomID);
     QSqlQuery selectUserFromRoom(int roomID, int senderID);
+    QSqlQuery selectUserIdFromRoom(int roomID);
     QSqlQuery selectCastMessage(int roomID);
     QSqlQuery selectUserName(int userID);
     QSqlQuery selectRole(int roleID);
@@ -27,8 +28,12 @@ public:
     QSqlQuery insertNewInvite(QString text, int roomID, int senderID,
                               int receiverID);
     QSqlQuery updateInviteAccept(int inviteID);
+    QSqlQuery updateInvite(int inviteID, int statusID);
     QSqlQuery selectInvitations (int receiverID);
     QSqlQuery selectWaitInvitations();
+    QSqlQuery selectIdSenderInvite(int inviteID);
+    QSqlQuery selectInvitedUserName(int inviteID);
+    QSqlQuery selectInvitedRoomName(int inviteID);
     bool delRoom(int roomID);
     bool insertMessage(int roomID, int userID, QString text);
     int getNewRoomID(int userID, QString roomName);

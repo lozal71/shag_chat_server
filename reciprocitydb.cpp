@@ -97,15 +97,61 @@ QString reciprocityDB::getRoomName(int roomID)
     return roomName;
 }
 
-int reciprocityDB::getUserID(QString userName)
+int reciprocityDB::getInvitedUserID(QString userName, int roomID)
 {
     queryPull query;
-    QSqlQuery qUserStatusID = query.selectUserID(userName);
+    QSqlQuery qUserID = query.selectUserID(userName);
     int invitedUserID = 0;
-    while (qUserStatusID.next()){
-        invitedUserID = qUserStatusID.value(0).toInt();
+    while (qUserID.next()){
+        invitedUserID = qUserID.value(0).toInt();
+    }
+    if (invitedUserID != 0) {
+        QSqlQuery qUserIdFromRoom = query.selectUserIdFromRoom(roomID);
+        while (qUserIdFromRoom.next()){
+            if (invitedUserID == qUserIdFromRoom.value(0).toInt()){
+                invitedUserID = -1;
+                break;
+            }
+        }
     }
     return invitedUserID;
+}
+
+int reciprocityDB::getIdSenderInvite(int inviteID)
+{
+    queryPull query;
+    QSqlQuery qIdSenderInvite = query.selectIdSenderInvite(inviteID);
+    int idSenderInvite = 0;
+    while (qIdSenderInvite.next()){
+        idSenderInvite = qIdSenderInvite.value(0).toInt();
+    }
+    return idSenderInvite;
+}
+
+QString reciprocityDB::getInvitedName(int inviteID)
+{
+    queryPull query;
+    QSqlQuery qInvitedName = query.selectInvitedUserName(inviteID);
+    QString userName;
+    while (qInvitedName.next()){
+        userName = qInvitedName.value(0).toString();
+    }
+    return userName;
+}
+
+QMap<int, QString> reciprocityDB::getInvitedRoom(int inviteID)
+{
+    queryPull query;
+    QSqlQuery qRoom = query.selectInvitedRoomName(inviteID);
+    QString roomName;
+    int roomID;
+    QMap<int, QString> temp;
+    while (qRoom.next()){
+        roomName = qRoom.value(0).toString();
+        roomID = qRoom.value(1).toInt();
+    }
+    temp.insert(roomID,roomName);
+    return temp;
 }
 
 void reciprocityDB::insertNewInvite(QString text, int roomID, int senderID, int receiverID)
@@ -151,10 +197,17 @@ QVariantMap reciprocityDB::acceptInvite(int inviteID, int roomID, int userID)
 {
     QVariantMap mapMess;
     queryPull query;
-    query.updateInviteAccept(inviteID);
+    //query.updateInviteAccept(inviteID);
+    query.updateInvite(inviteID,1);
     query.insertInvitedUsers(roomID, userID, 1);
     mapMess = setMapStatusMess(roomID);
     return mapMess;
+}
+
+void reciprocityDB::rejectInvite(int inviteID)
+{
+    queryPull query;
+    query.updateInvite(inviteID,2);
 }
 
 void reciprocityDB::connectChatToDB()

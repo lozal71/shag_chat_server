@@ -73,7 +73,7 @@ void chatServer::seachSession(QList<int> listUserOnline, QString text,
 
 //void chatServer::seachSessioForInvite(int invitedUserID, QString senderName,
 //                                      QString roomName, QString textInvite, int roomID)
-void chatServer::seachSessioForInvite(int invitedUserID)
+void chatServer::seachSessionForInvite(int invitedUserID)
 {
     QListIterator<session*> iSession(sessionList);
     session* currentSession;
@@ -82,6 +82,20 @@ void chatServer::seachSessioForInvite(int invitedUserID)
         if (currentSession->getIdClient() ==invitedUserID){
 //            currentSession->sendInvite(senderName, textInvite, roomName, roomID);
             currentSession->sendInvite();
+            break;
+        }
+    }
+}
+
+void chatServer::seachSessionForRejectInvite(int idSenderInvite, QString invitedName, QString roomName)
+{
+    QListIterator<session*> iSession(sessionList);
+    session* currentSession;
+    while (iSession.hasNext()){
+        currentSession = iSession.next();
+        if (currentSession->getIdClient() == idSenderInvite){
+//            currentSession->sendInvite(senderName, textInvite, roomName, roomID);
+            currentSession->sendRejectInvite(invitedName, roomName);
             break;
         }
     }
@@ -115,7 +129,9 @@ void chatServer::newClient()
     connect(sessionPntr, &session::notifyNewMessage,
             this, &chatServer::seachSession);
     connect(sessionPntr, &session::sendInviteUser,
-            this, &chatServer::seachSessioForInvite);
+            this, &chatServer::seachSessionForInvite);
+    connect(sessionPntr, &session::notifyRejectInvite,
+            this, &chatServer::seachSessionForRejectInvite);
 }
 
 void chatServer::removeSession()

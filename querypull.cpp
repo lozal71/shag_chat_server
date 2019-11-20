@@ -46,7 +46,9 @@ queryPull::queryPull()
                                   "FROM invitations "
                                   "WHERE invitations.receiver_id =:receiverID "
                                   "AND invitations.status_id = 3";
-
+    mapSetQuery["selectIdSenderInvite"] = "SELECT sender_id "
+                                          "FROM invitations "
+                                          "WHERE id =:inviteID ";
     mapSetQuery["insertNewRoom"] ="INSERT INTO rooms "
                                   "(name, users_count) "
                                   "VALUES (:roomName, 1) ";
@@ -62,6 +64,9 @@ queryPull::queryPull()
     mapSetQuery["updateInviteAccept"] = "UPDATE invitations "
                                         "SET status_id = 1 "
                                         "WHERE id = :inviteID";
+    mapSetQuery["updateInvite"] = "UPDATE invitations "
+                                  "SET status_id = :statusID "
+                                   "WHERE id = :inviteID";
     mapSetQuery["selectWaitInvitations"] = "SELECT id "
                                            "FROM invitations "
                                            "WHERE status_id = 3";
@@ -72,6 +77,9 @@ queryPull::queryPull()
                                       "INNER JOIN rooms on rooms_users.room_id = rooms.id "
                                       "WHERE rooms_users.room_id = :roomID "
                                       "AND rooms_users.user_id != :senderID ";
+    mapSetQuery["selectUserIdFromRoom"] = "SELECT user_id "
+                                          "FROM rooms_users "
+                                          "WHERE room_id = :roomID ";
     mapSetQuery["delRoom"] = "DELETE FROM rooms "
                              "WHERE rooms.id = :roomID ";
     mapSetQuery["selectRoomName"] = "SELECT name "
@@ -92,7 +100,14 @@ queryPull::queryPull()
     mapSetQuery["selectRole"] = "SELECT users_role.role "
                                 "FROM users_role "
                                 "WHERE users_role.id =:roleID";
-
+    mapSetQuery["selectInvitedUserName"] = "SELECT users.name "
+                                           "FROM users "
+                                           "INNER JOIN invitations on invitations.receiver_id = users.id "
+                                           "WHERE invitations.id = :inviteID ";
+    mapSetQuery["selectInvitedRoomName"] = "SELECT rooms.name, rooms.id "
+                                           "FROM rooms "
+                                           "INNER JOIN invitations on invitations.room_id = rooms.id "
+                                           "WHERE invitations.id = :inviteID ";
 }
 
 QSqlQuery queryPull::auth(QString login, QString pass)
@@ -173,6 +188,17 @@ QSqlQuery queryPull::selectUserFromRoom(int roomID, int senderID)
     if (!query.exec())
     {
         qDebug() << mapSetQuery["selectUserFromRoom"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectUserIdFromRoom(int roomID)
+{
+    query.prepare(mapSetQuery["selectUserIdFromRoom"]);
+    query.bindValue(":roomID", roomID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectUserIdFromRoom"] << query.lastError();
     }
     return query;
 }
@@ -271,6 +297,18 @@ QSqlQuery queryPull::updateInviteAccept(int inviteID)
     return query;
 }
 
+QSqlQuery queryPull::updateInvite(int inviteID, int statusID)
+{
+    query.prepare(mapSetQuery["updateInvite"]);
+    query.bindValue(":inviteID", inviteID);
+    query.bindValue(":statusID", statusID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["updateInvite"] << query.lastError();
+    }
+    return query;
+}
+
 QSqlQuery queryPull::selectInvitations(int receiverID)
 {
     query.prepare(mapSetQuery["selectInvitations"]);
@@ -288,6 +326,39 @@ QSqlQuery queryPull::selectWaitInvitations()
     if (!query.exec())
     {
         qDebug() << mapSetQuery["selectWaitInvitations"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectIdSenderInvite(int inviteID)
+{
+    query.prepare(mapSetQuery["selectIdSenderInvite"]);
+    query.bindValue(":inviteID", inviteID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectIdSenderInvite"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectInvitedUserName(int inviteID)
+{
+    query.prepare(mapSetQuery["selectInvitedUserName"]);
+    query.bindValue(":inviteID", inviteID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectInvitedUserName"] << query.lastError();
+    }
+    return query;
+}
+
+QSqlQuery queryPull::selectInvitedRoomName(int inviteID)
+{
+    query.prepare(mapSetQuery["selectInvitedRoomName"]);
+    query.bindValue(":inviteID", inviteID);
+    if (!query.exec())
+    {
+        qDebug() << mapSetQuery["selectInvitedRoomName"] << query.lastError();
     }
     return query;
 }

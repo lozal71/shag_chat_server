@@ -10,11 +10,9 @@ class chatServer: public QObject
 {
     Q_OBJECT
 public:
-//    chatServer(QObject* mainWindow, const char *logSlot);
     chatServer();
     ~chatServer();
     void serverStart();
-    //QSqlDatabase chatDB;
 private:
     QTcpServer *serverChat;
     QList<session*> sessionList;
@@ -25,19 +23,16 @@ private:
     void seachSessionForDelRoom(QList<int> listUserOnline, int roomID, QString roomName);
     void seachSession(QList<int> listUserOnline, QString text,
                       QString senderName, int roomID);
-//    void seachSessioForInvite(int invitedUserID, QString senderName,
-//                              QString roomName, QString textInvite, int roomID);
-    void seachSessioForInvite(int invitedUserID);
+    void seachSessionForInvite(int invitedUserID);
+    void seachSessionForRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
     QObject *mainWindow;
     const char* logSlot;
 
 signals:
-//    void serverError(const QString& text);
     void serverStarted();
-//    void sessionClosedForUI(const QString& text);
     void logToMainWindow(const QString& massage);
     void sessionClosedForDB(int id);
-//    void dbConnected();
+
 };
 
 #endif // CHATSERVER_H
