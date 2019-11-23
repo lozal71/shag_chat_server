@@ -9,16 +9,13 @@ session::session()
 session::session(QTcpSocket *socket)
 {
     socketSession = socket;
-    in = new protocolIn();
-    out = new protocolOut(socket);
+    protocol = new protocolOut(socket);
     db = new reciprocityDB();
     setConnectSession();
-
 }
 
 session::~session(){
-    delete in;
-    delete out;
+    delete protocol;
     delete db;
 }
 
@@ -27,14 +24,14 @@ void session::setConnectSession()
     // в сокете появились новые данные -
     //читаем пришедший запрос и пишем ответ
     connect (socketSession, &QTcpSocket::readyRead,
-             this,&session::readQueryWriteResponse);
+             this,&session::readQuery);
     connect(socketSession, &QTcpSocket::disconnected,
             this, &session::connectClosed);
     connect(this, &session::readyWrite,
-            out, &protocolOut::writeSocket);
+            protocol, &protocolOut::writeSocket);
 }
 
-// эхо-ответ на новое сообщение
+// обратный ответ пославшему новое сообщение
 QVariantMap session::backNewMess(int roomID, QString text)
 {
     QDateTime td;
@@ -45,6 +42,36 @@ QVariantMap session::backNewMess(int roomID, QString text)
     mapMess["textMess"] = text;
     mapMess["roomID"] = roomID;
     return mapMess;
+}
+
+void session::BackAuth(setCodeCommand code)
+{
+    // обратный ответ из БД запросившему авторизацию
+    QVariantMap mapData = mapQuery["joData"].toMap();
+    qDebug() <<mapData;
+    QMap<int, QString> IdName = db->getUserIdUserName(mapData["login"].toString(),
+                                                      mapData["pass"].toString());
+    mapData.clear();
+    qDebug() << IdName;
+    int userID = IdName.firstKey();
+    mapData.insert("userID", userID);
+    mapData.insert("userName", IdName.first());
+     qDebug() <<mapData;
+    // добавляем данные о поступивших приглашениях от других пользователей
+    QVariantMap mapInvitations = db->getInvitations(userID);
+    mapData.insert("invite", mapInvitations);
+     qDebug() <<mapData;
+    // определяем комнаты, в которых участвует клиент
+    // в комнатах определяются сообщения и список участников
+    QVariantMap mapRooms = db->getMapRoomsID(userID);
+    mapData.insert("rooms", mapRooms);
+    qDebug() <<mapData;
+    mapBack.insert("joData", mapData);
+    mapBack.insert("codeCommand", code);
+    qDebug() << mapBack;
+    // меняем статус клиента на он-лайн и записываем текущее время
+    db->setOnLine(userID);
+    emit readyWrite(mapBack);
 }
 
 void session::messDelRoom(QString roomName, int roomID)
@@ -61,12 +88,6 @@ void session::messDelRoom(QString roomName, int roomID)
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     emit readyWrite(mapCommand);
-    //writeSocket(mapCommand);
-//    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-//    //qDebug() << "broadCastDelRoom jdResponse" << jdResponse;
-//    out->setPackage(jdResponse);
-//    qDebug() << client.id << out->getPackage();
-//    socketSession->write(out->getPackage());
 }
 
 void session::newMess(QString text, QString senderName, int roomID)
@@ -82,13 +103,6 @@ void session::newMess(QString text, QString senderName, int roomID)
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     emit readyWrite(mapCommand);
-    //writeSocket(mapCommand);
-//    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-//   // qDebug() << "client.id"  << client.id;
-//    //qDebug() << " broadcast jdResponse" << jdResponse;
-//    out->setPackage(jdResponse);
-//    //qDebug() << client.id << out->getPackage();
-//    socketSession->write(out->getPackage());
 }
 
 
@@ -113,16 +127,9 @@ void session::messUpdateUsers(int userID, QString userName,
     mapData["roomID"] = roomID;
     mapCommand["joDataInput"] = mapData;
     emit readyWrite(mapCommand);
-    //writeSocket(mapCommand);
-//    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-//   // qDebug() << "client.id"  << client.id;
-//    //qDebug() << " broadcast jdResponse" << jdResponse;
-//    out->setPackage(jdResponse);
-//    //qDebug() << client.id << out->getPackage();
-//    socketSession->write(out->getPackage());
 }
 
-void session::sendInvite()
+void session::messInvite()
 {
     QVariantMap mapCommand;
     QVariantMap mapData;
@@ -130,53 +137,40 @@ void session::sendInvite()
     mapCommand["codeCommand"] = setCodeCommand::questInvite;
     mapCommand["joDataInput"] = mapData;
     emit readyWrite(mapCommand);
-    //writeSocket(mapCommand);
-//    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-//    out->setPackage(jdResponse);
-//    //qDebug() << client.id; // << out->getPackage();
-//    socketSession->write(out->getPackage());
 }
 
-int session::getIdClient()
+int session::getClientID()
 {
     return client.id;
 }
 
-
-void session::readQueryWriteResponse()
+QString session::getClientName()
 {
-    setCodeCommand codeCommand;
-//    // получаем JSON-документ из сокета
-//    QJsonDocument jdTemp = in->receiveJSONdoc(socketSession);
-//    QJsonObject joTemp = jdTemp.object();
-//    //qDebug() << "joTemp" << joTemp;
-//    QVariantMap mapCommand =joTemp.toVariantMap();
+    return client.name;
+}
 
-    QVariantMap mapCommand = out->readSocket();
+
+void session::readQuery()
+{
+    mapQuery = protocol->readSocket();
     // определяем команду запроса
-    codeCommand = setCodeCommand(mapCommand["codeCommand"].toInt());
+    setCodeCommand code = setCodeCommand(mapQuery["codeCommand"].toInt());
     // определяем данные для дальнейшей обработки
-    QVariantMap mapData =  mapCommand["joDataInput"].toMap();
-    QVariantMap mapResponse; // ответ от сервера
-    if (in->isError()){
+    QVariantMap mapData =  mapQuery["joData"].toMap();
+    if (protocol->isError()){
           qDebug() << "Problem: error massage";
     }
     else {
-        switch (codeCommand) {
+        switch (code) {
         case setCodeCommand::Auth:
         {
             qDebug() <<  "query auth ";
-            // обратный ответ запросившему авторизацию из БД в виде:
-                    // {{"userID" : userID},
-                    //  {"userName": userName}
-                    //  {"invite": mapInvite}
-                    //  {"rooms": mapRoomsID{...mapMess}}}
-            // и переключаем пользователя в режим он-лайн
-             mapResponse = db->mapResponseAuth(mapData["login"].toString(),
-                                               mapData["pass"].toString());
+            BackAuth(code);
+//            mapBack = db->mapResponseAuth(mapData["login"].toString(),
+//                                               mapData["pass"].toString());
             // фиксируем в сессии id и имя клиента
-            this->client.id = mapResponse["userID"].toInt();
-            this->client.name = mapResponse["userName"].toString();
+            this->client.id = mapBack["joData"].toMap()["userID"].toInt();
+            this->client.name = mapBack["joData"].toMap()["userName"].toString();
             break;
         }
         case setCodeCommand::newMess:
@@ -190,14 +184,14 @@ void session::readQueryWriteResponse()
             // испускаем сигнал: послать всем онлайн-участникам комнаты новое сообщение
             emit sendNewMessage(listUserOnline, text, client.name, roomID);
             // обратный ответ автору нового сообщения
-            mapResponse = backNewMess(roomID, text);
+            mapBack = backNewMess(roomID, text);
             break;
         }
         case setCodeCommand::NewRoom:
         {
             qDebug() <<  "query new room ";
             // обратный ответ инициатору создания новой комнаты из БД: newRoomID, newRoomName -
-            mapResponse = db->insertNewRoom(client.id, mapData["roomNew"].toString());
+            mapBack = db->insertNewRoom(client.id, mapData["roomNew"].toString());
             break;
         }
         case setCodeCommand::DelRoom:
@@ -212,7 +206,7 @@ void session::readQueryWriteResponse()
             QString roomName = db->getRoomName(delRoomID);
             emit sendMessDelRoom(listUserOnline, delRoomID, roomName);
             // обратный ответ инициатору удаления комнаты
-            mapResponse["delRoomID"] = delRoomID;
+            mapBack["delRoomID"] = delRoomID;
             break;
         }
         case setCodeCommand::Invite:
@@ -235,8 +229,8 @@ void session::readQueryWriteResponse()
                                         mapData["roomID"].toInt());
             }
             // обратный ответ пославшему приглашение
-            mapResponse["invitedUserID"] = invitedUserID;
-            mapResponse["invitedUserName"] = mapData["userName"].toString();
+            mapBack["invitedUserID"] = invitedUserID;
+            mapBack["invitedUserName"] = mapData["userName"].toString();
             break;
         }
         case setCodeCommand::acceptInvite:
@@ -255,12 +249,12 @@ void session::readQueryWriteResponse()
             emit sendUpdateUsers(listUserOnline, client.id, client.name,
                                    roomID, mapData["roomName"].toString(), setUpdateUsers::addUser);
             // обратный ответ послашему согласие на приглашение: сбор всех данных о комнате
-            mapResponse["mess"] = db->acceptInvite(inviteID,roomID, client.id);
-            mapResponse["roomID"] = roomID;
-            mapResponse["roomName"] = mapData["roomName"].toString();
-            mapResponse["inviteID"] = inviteID;
-            QVariantMap mapUsers = db->getUserIdNameFromRoom(roomID, client.id);
-            mapResponse["users"] = mapUsers;
+            mapBack["mess"] = db->acceptInvite(inviteID,roomID, client.id);
+            mapBack["roomID"] = roomID;
+            mapBack["roomName"] = mapData["roomName"].toString();
+            mapBack["inviteID"] = inviteID;
+            QVariantMap mapUsers = db->getMembers(roomID, client.id);
+            mapBack["users"] = mapUsers;
             break;
         }
         case setCodeCommand::rejectInvite:
@@ -279,7 +273,7 @@ void session::readQueryWriteResponse()
             // сообщение об отклонении приглашения
             emit sendNewMessage(listUserOnline, text, client.name, room.firstKey());
             // обратный ответ пославшениму отклонение приглашения
-            mapResponse["inviteID"] = inviteID;
+            mapBack["inviteID"] = inviteID;
             break;
         }
         case setCodeCommand::delUser:
@@ -303,12 +297,12 @@ void session::readQueryWriteResponse()
             // обратный ответ инициатору удаления пользователя
             QDateTime td;
             td = td.currentDateTime();
-            mapResponse["updateParam"] = setUpdateUsers::removeUser;
-            mapResponse["timeMess"] = td;
-            mapResponse["textMess"] = "you is removed from room " + roomName;
-            mapResponse["senderName"] = "you";
-            mapResponse["userID"] = userID;
-            mapResponse["roomID"] = roomID;
+            mapBack["updateParam"] = setUpdateUsers::removeUser;
+            mapBack["timeMess"] = td;
+            mapBack["textMess"] = "you is removed from room " + roomName;
+            mapBack["senderName"] = "you";
+            mapBack["userID"] = userID;
+            mapBack["roomID"] = roomID;
             break;
         }
         case setCodeCommand::MessDelRoom:
@@ -338,26 +332,12 @@ void session::readQueryWriteResponse()
         }
     }
     // преобразуем в JSON-формат
-    mapCommand["joDataInput"]=mapResponse;
-    qDebug() << mapCommand;
-    emit readyWrite(mapCommand);
-    //writeSocket(mapCommand);
-//    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapCommand);
-//    //qDebug() << "295 jdResponse" << jdResponse;
-
-//    // отправляем в сокет
-//    out->setPackage(jdResponse);
-//    qDebug() << client.id; // << out->getPackage();
-//    socketSession->write(out->getPackage());
+    mapQuery["joDataInput"]=mapBack;
+    //qDebug() << mapCommand;
+    emit readyWrite(mapQuery);
 }
 
-void session::writeSocket(QVariantMap mapSocket)
-{
-    QJsonDocument jdResponse = QJsonDocument::fromVariant(mapSocket);
-    out->setPackage(jdResponse);
-   // qDebug() << client.id; // << out->getPackage();
-    socketSession->write(out->getPackage());
-}
+
 
 
 

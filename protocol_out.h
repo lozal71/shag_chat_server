@@ -12,11 +12,10 @@ class protocolOut: public QObject
 public:
     protocolOut();
     protocolOut(QTcpSocket *socket);
-    QByteArray getPackage();
-    void setPackage(QJsonDocument jdParam);
+    //QByteArray getPackage();
+    //void setPackage(QJsonDocument jdParam);
     void writeSocket(QVariantMap mapSocket);
     QVariantMap readSocket();
-
     bool isError();
 private:
     QTcpSocket *socket;

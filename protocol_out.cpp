@@ -11,26 +11,26 @@ protocolOut::protocolOut(QTcpSocket *socket)
 }
 
 
-QByteArray protocolOut::getPackage()
-{
-    //qDebug() << "getPackage baPackage" <<baPackage ;
-    return baPackage;
-}
+//QByteArray protocolOut::getPackage()
+//{
+//    //qDebug() << "getPackage baPackage" <<baPackage ;
+//    return baPackage;
+//}
 
-void protocolOut::setPackage(QJsonDocument jdParam)
-{
-    baPackage.clear();
-    //qDebug() << "jdParam" << jdParam;
-    QByteArray baTemp = jdParam.toJson(QJsonDocument::Compact);
-    //quint32 packageSize = str.length();
-    //qDebug() << "baTemp" << baTemp;
-    quint32 packageSize = quint32(baTemp.size());
-    //qDebug() << "packageSize" << packageSize;
-    QDataStream stream(&baPackage, QIODevice::ReadWrite);
-    stream << packageSize;
-    stream << baTemp;
-    //qDebug() << "setPackage baPackage" <<baPackage ;
-}
+//void protocolOut::setPackage(QJsonDocument jdParam)
+//{
+//    baPackage.clear();
+//    //qDebug() << "jdParam" << jdParam;
+//    QByteArray baTemp = jdParam.toJson(QJsonDocument::Compact);
+//    //quint32 packageSize = str.length();
+//    //qDebug() << "baTemp" << baTemp;
+//    quint32 packageSize = quint32(baTemp.size());
+//    //qDebug() << "packageSize" << packageSize;
+//    QDataStream stream(&baPackage, QIODevice::ReadWrite);
+//    stream << packageSize;
+//    stream << baTemp;
+//    //qDebug() << "setPackage baPackage" <<baPackage ;
+//}
 
 void protocolOut::writeSocket(QVariantMap mapSocket)
 {
@@ -38,7 +38,7 @@ void protocolOut::writeSocket(QVariantMap mapSocket)
     transferJSONtoBA();
     //out->setPackage(jdResponse);
    // qDebug() << client.id; // << out->getPackage();
-    qDebug() << jsonDoc;
+    //qDebug() << jsonDoc;
     this->socket->write(baPackage);
 }
 

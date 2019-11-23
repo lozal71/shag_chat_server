@@ -2,8 +2,8 @@
 #define SESSION_H
 
 #include <QTcpSocket>
-#include <QJsonObject>
-#include "protocol_in.h"
+//#include <QJsonObject>
+//#include "protocol_in.h"
 #include "protocol_out.h"
 #include "reciprocitydb.h"
 
@@ -20,31 +20,32 @@ public:
     session();
     ~session();
     session(QTcpSocket *socket);
-    int getIdClient();
+    int getClientID();
+    QString getClientName();
     void messDelRoom(QString roomName, int roomID);
     void newMess(QString text, QString senderName, int roomID);
     void messUpdateUsers(int userID, QString userName,
                                int roomID, QString roomName, setUpdateUsers param);
-    void sendInvite();
-    void sendRejectInvite(QString invitedName, QString roomName);
+    void messInvite();
+    void messRejectInvite(QString invitedName, QString roomName);
 private:
     QTcpSocket *socketSession;
-    protocolIn *in;
-    protocolOut *out;
+    protocolOut *protocol;
     reciprocityDB *db;
+    QVariantMap mapQuery;
+    QVariantMap mapBack;
+    QVariantMap mapServerCommand;
     struct dataClient{
         int id;
         QString name;
     } client;
-    void readQueryWriteResponse();
-    void writeSocket(QVariantMap mapSocket);
+    void readQuery();
     void setConnectSession();
     QVariantMap backNewMess(int roomID, QString text);
+    void BackAuth(setCodeCommand code);
 signals:
     void connectClosed();
     void sessionClosed(int id);
-    void logQueryReaded(const QString &text);
-    void queryReaded(QVariantMap mapParam);
     void sendMessDelRoom(QList<int> listUserOnline, int delRoomID, QString roomName);
     void sendNewMessage(QList<int> listUserOnline, QString text,
                           QString senderName, int roomID);
@@ -53,7 +54,7 @@ signals:
                            int roomID, QString roomName, setUpdateUsers param);
     void sendInviteUser(int invitedUserID, QString senderName,
                         QString roomName, QString textInvite, int roomID);
-    void notifyRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
+    void sendRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
     void readyWrite(QVariantMap mapParam);
 };
 

@@ -23,7 +23,7 @@ void chatServer::setConnectServer()
             db, &reciprocityDB::connectChatToDB);
     // закрытие сессии - изменение статуса клиента в БД на офф-лайн
     connect(this, &chatServer::sessionClosedForDB,
-            db,&reciprocityDB::setStatusOFFline);
+            db,&reciprocityDB::setOffLine);
 }
 
 void chatServer::sendMessDelRoom(QList<int> listUserOnline, int roomID, QString roomName)
@@ -40,7 +40,7 @@ void chatServer::sendMessDelRoom(QList<int> listUserOnline, int roomID, QString 
             while (i.hasNext()){
                 currentSession = i.next();
                 // если найдена сессия для онлайн-участника комнаты
-                if (currentSession->getIdClient() == currentID){
+                if (currentSession->getClientID() == currentID){
                     // посылаем сообщение клиенту об удалении комнаты
                     currentSession->messDelRoom(roomName, roomID);
                     break;
@@ -66,7 +66,7 @@ void chatServer::sendMessUpdateUsesrs(QList<int> listUserOnline, int userID,
             while (i.hasNext()){
                 currentSession = i.next();
                 // если найдена сессия для онлайн-участника комнаты
-                if (currentSession->getIdClient() == currentID){
+                if (currentSession->getClientID() == currentID){
                     // посылаем клиенту сообщение о появлении/удалении пользователя
                     // и команду изменить список участников комнаты
                     currentSession->messUpdateUsers(userID, userName,
@@ -93,7 +93,7 @@ void chatServer::sendNewMess(QList<int> listUserOnline, QString text,
             while (iSession.hasNext()){
                 currentSession = iSession.next();
                 // если найдена сессия для онлайн-участника комнаты
-                if (currentSession->getIdClient() == currentID){
+                if (currentSession->getClientID() == currentID){
                     // посылаем клиенту новое сообщение в комнату
                     currentSession->newMess(text, senderName, roomID);
                     break;
@@ -113,9 +113,9 @@ void chatServer::sendInvite(int invitedUserID)
     while (iSession.hasNext()){
         currentSession = iSession.next();
         // если найдена сессия для приглашаемого участника
-        if (currentSession->getIdClient() ==invitedUserID){
+        if (currentSession->getClientID() ==invitedUserID){
             // посылаем приглашение
-            currentSession->sendInvite();
+            currentSession->messInvite();
             break;
         }
     }
@@ -159,7 +159,7 @@ void chatServer::removeSession()
     // определяем сессию(клиента),который послал сигнал
     session *sessionPntr = static_cast<session*>(sender());
     // определяем id клиента
-    int id = sessionPntr->getIdClient();
+    int id = sessionPntr->getClientID();
      qDebug() << "session "+QString::number(id) +" closed";
     // посылаем сигнал в БД для изменения статуса клиента на офф-лайн
     emit sessionClosedForDB(id);
