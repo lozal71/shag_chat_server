@@ -20,11 +20,14 @@ private:
     void newClient();
     void removeSession();
     void setConnectServer();
-    void seachSessionForDelRoom(QList<int> listUserOnline, int roomID, QString roomName);
-    void seachSession(QList<int> listUserOnline, QString text,
+    void sendMessDelRoom(QList<int> listUserOnline, int roomID, QString roomName);
+    void sendMessUpdateUsesrs(QList<int> listUserOnline,
+                                     int userID, QString userName,
+                                     int roomID, QString roomName, setUpdateUsers param);
+    void sendNewMess(QList<int> listUserOnline, QString text,
                       QString senderName, int roomID);
-    void seachSessionForInvite(int invitedUserID);
-    void seachSessionForRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
+    void sendInvite(int invitedUserID);
+    void sendRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
     QObject *mainWindow;
     const char* logSlot;
 

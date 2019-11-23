@@ -11,11 +11,13 @@ class reciprocityDB: public QObject
     Q_OBJECT
 public:
     reciprocityDB();
+    ~reciprocityDB();
+    queryPull *query;
     QSqlDatabase chatDB;
     QVariantMap  mapResponseAuth(QString login, QString pass);
     void connectChatToDB();
     void setStatusOFFline(int id);
-    QList<int> insertMessage(int roomID, int senderID, QString text);
+    QList<int> insertNewMessage(int roomID, int senderID, QString text);
     QVariantMap insertNewRoom(int userID, QString roomName);
     QList<int> delRoom(int roomID, int adminID);
     QString getRoomName(int roomID);
@@ -31,8 +33,9 @@ public:
     QVariantMap acceptInvite(int inviteID, int roomID, int userID);
     void rejectInvite(int inviteID);
     void deleteUser(int userID, int roomID);
+    QVariantMap setMapRoomsID(int userID);
 private:
-    QVariantMap setMapRoomsID(int id);
+
     QVariantMap setMapStatusMess(int roomID);
     QVariantMap collectMapMessID(QSqlQuery qMessage);
 };
