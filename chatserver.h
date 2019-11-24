@@ -20,7 +20,8 @@ private:
     void newClient();
     void removeSession();
     void setConnectServer();
-    void sendMessDelRoom(QList<int> listUserOnline, int roomID, QString roomName);
+    void sendMessDelRoom(QList<int> listUserOnline, int roomID,
+                         QString roomName, QString adminName);
     void sendMessUpdateUsesrs(QList<int> listUserOnline,
                                      int userID, QString userName,
                                      int roomID, QString roomName, setUpdateUsers param);

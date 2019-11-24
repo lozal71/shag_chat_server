@@ -22,12 +22,14 @@ public:
     session(QTcpSocket *socket);
     int getClientID();
     QString getClientName();
-    void messDelRoom(QString roomName, int roomID);
-    void newMess(QString text, QString senderName, int roomID);
-    void messUpdateUsers(int userID, QString userName,
+    void sendMessDelRoom(QString roomName, int roomID, QString adminName);
+    void sendMess(QString text, QString senderName, int roomID);
+    void sendMessUpdateUsers(int userID, QString userName,
                                int roomID, QString roomName, setUpdateUsers param);
-    void messInvite();
+    void sendMessInvite();
     void messRejectInvite(QString invitedName, QString roomName);
+    //void connectDB();
+    void setOffLine(int userID);
 private:
     QTcpSocket *socketSession;
     protocolOut *protocol;
@@ -41,20 +43,33 @@ private:
     } client;
     void readQuery();
     void setConnectSession();
-    QVariantMap backNewMess(int roomID, QString text);
-    void BackAuth(setCodeCommand code);
+
+    void backInvite();
+    void backDelRoom();
+    void backNewRoom();
+    void backNewMess();
+    void backAuth();
+    void backAcceptInvite();
+    void backRejectInvite();
+
+    void prepareDistribNewMess();
+    void prepareDistribMessDelRoom();
+    void prepareMessInvite();
+    void prepareMessRejectInvite();
+    void prepareDistribAcceptInvite();
 signals:
     void connectClosed();
     void sessionClosed(int id);
-    void sendMessDelRoom(QList<int> listUserOnline, int delRoomID, QString roomName);
-    void sendNewMessage(QList<int> listUserOnline, QString text,
+    void distribMessDelRoom(QList<int> listUserOnline, int delRoomID,
+                            QString roomName, QString adminName);
+    void distribNewMess(QList<int> listUserOnline, QString text,
                           QString senderName, int roomID);
     void sendUpdateUsers(QList<int> listUserOnline,
                            int userID, QString userName,
                            int roomID, QString roomName, setUpdateUsers param);
-    void sendInviteUser(int invitedUserID, QString senderName,
+    void sendInvite(int invitedUserID, QString senderName,
                         QString roomName, QString textInvite, int roomID);
-    void sendRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
+    void sendRejectInvite(int idSenderInvite, QString invitedName, int roomID, QString roomName);
     void readyWrite(QVariantMap mapParam);
 };
 

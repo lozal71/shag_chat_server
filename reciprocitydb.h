@@ -16,26 +16,29 @@ public:
     QSqlDatabase chatDB;
 
     void connectChatToDB();
-    QVariantMap  mapResponseAuth(QString login, QString pass);
 
     QMap<int, QString> getUserIdUserName(QString login, QString pass);
     QString getRoomName(int roomID);
     QString getUserName(int userID);
+    int getUserID(QString userName);
     QString getRole(int roleID);
-    int getInvitedUserID(QString userName, int roomID);
+    int getInvitedUserID(QString userName, int roomID, int senderID);
     int getIdSenderInvite(int inviteID);
     QString getInvitedName(int inviteID);
     QMap<int, QString> getInvitedRoom(int inviteID);
     QVariantMap getMembers(int roomID, int userID);
     QVariantMap getInvitations(int userID);
     QVariantMap getMapRoomsID(int userID);
+    QList<int> getMembersIdOnline(int roomID, int senderID);
+    int getNewRoomID(int userID, QString roomName);
 
     void setOffLine(int userID);
     void setOnLine(int userID);
 
-    QList<int> insertNewMessage(int roomID, int senderID, QString text);
-    QVariantMap insertNewRoom(int userID, QString roomName);
-    QList<int> delRoom(int roomID, int adminID);
+    void insertNewMess(int roomID, int senderID, QString text);
+
+    void deleteRoom(int roomID);
+
     void insertNewInvite(QString text, int roomID, int senderID, int receiverID);
     QVariantMap acceptInvite(int inviteID, int roomID, int userID);
     void rejectInvite(int inviteID);

@@ -10,33 +10,6 @@ reciprocityDB::~reciprocityDB()
     delete query;
 }
 
-QVariantMap reciprocityDB::mapResponseAuth(QString login, QString pass)
-{
-    int userID = 0;
-    QString userName;
-    QVariantMap mapResponseDB;
-    //qDebug() << login << " " << pass;
-    //queryPull query;
-
-   // запрашиваем в БД id, name по логину и паролю
-    QSqlQuery qAuth = query->getUserIdUserName(login,pass);
-    // фиксируем id, name
-    while (qAuth.next()){
-        userID = qAuth.value(0).toInt();
-        userName = qAuth.value(1).toString();
-        mapResponseDB["userName"] = userName;
-        mapResponseDB["userID"] = userID;
-        // добавляем данные о поступивших приглашениях от других пользователей
-        mapResponseDB["invite"] = getInvitations(userID);
-        // определяем комнаты, в которых участвует клиент
-        mapResponseDB["rooms"] = getMapRoomsID(userID);
-         // меняем статус клиента на он-лайн и записываем текущее время
-        query->setOnLine(userID);
-        //qDebug() << "mapResponseDB" << mapResponseDB;
-    }
-    return mapResponseDB;
-}
-
 QMap<int, QString> reciprocityDB::getUserIdUserName(QString login, QString pass)
 {
     qDebug() << "getUserIdUserName";
@@ -53,71 +26,37 @@ QMap<int, QString> reciprocityDB::getUserIdUserName(QString login, QString pass)
     return temp;
 }
 
-QList<int> reciprocityDB::insertNewMessage(int roomID, int senderID, QString text)
+void reciprocityDB::insertNewMess(int roomID, int senderID, QString text)
 {
-    QVariantMap mapResponseDB;
-    //queryPull query;
-
-    // вставляем текст сообщения в БД
-    query->insertMessage(roomID, senderID, text);
-    int userID = 0;
-    int userStatus = 0;
-    QList<int> listUserOnline;
-     // делаем запрос в БД о других (кроме пославшего сообщение)
-    // участниках комнаты в режиме онлайн
-    QSqlQuery qUserFromRoom = query->selectUserFromRoom(roomID, senderID);
-    // собираем итоговый ответ в MAP
-    while (qUserFromRoom.next()){
-        userID = qUserFromRoom.value(0).toInt();
-        userStatus = qUserFromRoom.value(2).toInt();
-        if (userStatus == 1) {
-            listUserOnline.append(userID);
-        }
-     }
-    return listUserOnline;
+    query->insertNewMess(roomID, senderID, text);
 }
 
-QVariantMap reciprocityDB::insertNewRoom(int userID, QString roomName)
+void reciprocityDB::deleteRoom(int roomID)
 {
-    QVariantMap mapResponseDB;
-    //queryPull query;
-    mapResponseDB["newRoomID"] = query->getNewRoomID(userID, roomName);
-    mapResponseDB["newRoomName"] = roomName;
-    return mapResponseDB;
+    query->deleteRoom(roomID);
 }
 
-QList<int> reciprocityDB::delRoom(int roomID, int adminID)
+int reciprocityDB::getNewRoomID(int userID, QString roomName)
 {
-    int userID = 0;
-    int userStatus;
-    QString delRoomName;
-    QList<int> listUserOnline;
-    //queryPull query;
-    QSqlQuery qUserFromDelRoom = query->selectUserFromRoom(roomID, adminID);
-    while (qUserFromDelRoom.next()){
-        userID = qUserFromDelRoom.value(0).toInt();
-        delRoomName = qUserFromDelRoom.value(1).toString();
-        userStatus = qUserFromDelRoom.value(2).toInt();
-        if (userStatus == 1) {
-            listUserOnline.append(userID);
-        }
-        else{
-            query->insertMessage(1,adminID,"Room " + delRoomName + " is moving away");
-        }
+    query->insertNewRoom(roomName);
+    QSqlQuery qRoom = query->getRoomID(roomName);
+    int roomID = 0;
+    while (qRoom.next()){
+        roomID = qRoom.value(0).toInt();
     }
-    query->delRoom(roomID);
-    return listUserOnline;
+    query->insertAdminToRoom(userID,roomID);
+    return roomID;
 }
+
 
 QString reciprocityDB::getRoomName(int roomID)
 {
-    //queryPull query;
     QSqlQuery qRoomName = query->getRoomName(roomID);
     QString roomName;
     while(qRoomName.next()){
         roomName = qRoomName.value(0).toString();
     }
-    //qDebug() << "getRoomName roomName" << roomName;
+    qDebug() << "getRoomName roomName" << roomName;
     return roomName;
 }
 
@@ -131,6 +70,16 @@ QString reciprocityDB::getUserName(int userID)
     return userName;
 }
 
+int reciprocityDB::getUserID(QString userName)
+{
+    int userID = 0;
+    QSqlQuery qUser = query->getUserID(userName);
+    while (qUser.next()){
+        userID = qUser.value(0).toInt();
+    }
+    return userID;
+}
+
 QString reciprocityDB::getRole(int roleID)
 {
     qDebug() << "getRole";
@@ -142,23 +91,25 @@ QString reciprocityDB::getRole(int roleID)
     return role;
 }
 
-int reciprocityDB::getInvitedUserID(QString userName, int roomID)
+int reciprocityDB::getInvitedUserID(QString userName, int roomID, int senderID)
 {
     //queryPull query;
-    QSqlQuery qUserID = query->selectUserID(userName);
+    QSqlQuery qUserID = query->getUserID(userName);
     int invitedUserID = 0;
     while (qUserID.next()){
         invitedUserID = qUserID.value(0).toInt();
     }
+    qDebug() << "invitedUserID" << invitedUserID;
     if (invitedUserID != 0) {
-        QSqlQuery qUserIdFromRoom = query->selectUserIdFromRoom(roomID);
-        while (qUserIdFromRoom.next()){
-            if (invitedUserID == qUserIdFromRoom.value(0).toInt()){
+        QSqlQuery qMembers = query->getMembers(roomID, senderID);
+        while (qMembers.next()){
+            if (invitedUserID == qMembers.value(0).toInt()){
                 invitedUserID = -1;
                 break;
             }
         }
     }
+    qDebug() << "invitedUserID" << invitedUserID;
     return invitedUserID;
 }
 
@@ -201,7 +152,6 @@ QMap<int, QString> reciprocityDB::getInvitedRoom(int inviteID)
 
 void reciprocityDB::insertNewInvite(QString text, int roomID, int senderID, int receiverID)
 {
-    //queryPull query;
     QSqlQuery qinsertNewInvite = query->insertNewInvite(text,roomID,senderID,receiverID);
 }
 
@@ -298,7 +248,6 @@ void reciprocityDB::setOnLine(int userID)
 
 QVariantMap reciprocityDB::getMapRoomsID(int userID)
 {
-    qDebug() << "getMapRoomsID";
     QSqlQuery qRooms = query->getRooms(userID);
     QVariantMap mapRoomsID;
     QVariantMap mapRooms;
@@ -328,6 +277,18 @@ QVariantMap reciprocityDB::getMapRoomsID(int userID)
         mapMembers.clear();
     }
     return mapRoomsID;
+}
+
+QList<int> reciprocityDB::getMembersIdOnline(int roomID, int senderID)
+{
+    QList<int> listUserOnline;
+     // делаем запрос в БД о других (кроме пославшего сообщение)
+    // участниках комнаты в режиме онлайн
+    QSqlQuery qMembersOnLine = query->getMembersIdOnline(roomID, senderID);
+    while (qMembersOnLine.next()){
+        listUserOnline.append(qMembersOnLine.value(0).toInt());
+     }
+    return listUserOnline;
 }
 
 

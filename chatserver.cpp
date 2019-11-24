@@ -21,12 +21,10 @@ void chatServer::setConnectServer()
     // старт сервера - соединение с БД
     connect(this,&chatServer::serverStarted,
             db, &reciprocityDB::connectChatToDB);
-    // закрытие сессии - изменение статуса клиента в БД на офф-лайн
-    connect(this, &chatServer::sessionClosedForDB,
-            db,&reciprocityDB::setOffLine);
 }
 
-void chatServer::sendMessDelRoom(QList<int> listUserOnline, int roomID, QString roomName)
+void chatServer::sendMessDelRoom(QList<int> listUserOnline, int roomID,
+                                 QString roomName, QString adminName)
 {
     if (!listUserOnline.isEmpty()){
         // просматриваем список онлайн-участников комнаты
@@ -42,7 +40,7 @@ void chatServer::sendMessDelRoom(QList<int> listUserOnline, int roomID, QString 
                 // если найдена сессия для онлайн-участника комнаты
                 if (currentSession->getClientID() == currentID){
                     // посылаем сообщение клиенту об удалении комнаты
-                    currentSession->messDelRoom(roomName, roomID);
+                    currentSession->sendMessDelRoom(roomName, roomID, adminName);
                     break;
                 }
             }
@@ -69,7 +67,7 @@ void chatServer::sendMessUpdateUsesrs(QList<int> listUserOnline, int userID,
                 if (currentSession->getClientID() == currentID){
                     // посылаем клиенту сообщение о появлении/удалении пользователя
                     // и команду изменить список участников комнаты
-                    currentSession->messUpdateUsers(userID, userName,
+                    currentSession->sendMessUpdateUsers(userID, userName,
                                                     roomID, roomName, param);
                     break;
                 }
@@ -95,7 +93,7 @@ void chatServer::sendNewMess(QList<int> listUserOnline, QString text,
                 // если найдена сессия для онлайн-участника комнаты
                 if (currentSession->getClientID() == currentID){
                     // посылаем клиенту новое сообщение в комнату
-                    currentSession->newMess(text, senderName, roomID);
+                    currentSession->sendMess(text, senderName, roomID);
                     break;
                 }
             }
@@ -115,7 +113,7 @@ void chatServer::sendInvite(int invitedUserID)
         // если найдена сессия для приглашаемого участника
         if (currentSession->getClientID() ==invitedUserID){
             // посылаем приглашение
-            currentSession->messInvite();
+            currentSession->sendMessInvite();
             break;
         }
     }
@@ -143,14 +141,16 @@ void chatServer::newClient()
     // связь прервалась - удаляем сессию
     connect(sessionPntr, &session::connectClosed,
             this, &chatServer::removeSession);
-    connect(sessionPntr, &session::sendMessDelRoom,
+    connect(sessionPntr, &session::distribMessDelRoom,
             this, &chatServer::sendMessDelRoom);
-    connect(sessionPntr, &session::sendNewMessage,
+    connect(sessionPntr, &session::distribNewMess,
             this, &chatServer::sendNewMess);
-    connect(sessionPntr, &session::sendInviteUser,
+    connect(sessionPntr, &session::sendInvite,
             this, &chatServer::sendInvite);
     connect(sessionPntr, &session::sendUpdateUsers,
             this, &chatServer::sendMessUpdateUsesrs);
+    connect(this, &chatServer::sessionClosedForDB,
+            sessionPntr,&session::setOffLine);
 }
 
 void chatServer::removeSession()
