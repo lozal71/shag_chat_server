@@ -8,9 +8,9 @@
 #include "reciprocitydb.h"
 
 enum setUpdateUsers {addUser, removeUser};
-enum setCodeCommand {Auth = 1, newMess = 2, NewRoom = 3, DelRoom = 4,
-                     MessDelRoom = 5, SendMess = 6, Invite = 7, questInvite = 8,
-                     acceptInvite = 9, rejectInvite = 10, delUser = 11, updateUsers = 12 };
+enum setCodeCommand {auth = 1, newMess = 2, newRoom = 3, delRoom = 4,
+                     messDelRoom = 5, sendMess = 6, invite = 7, questInvite = 8,
+                     acceptInvite = 9, rejectInvite = 10, delUser = 11, updateUsers = 12};
 
 
 class session: public QObject
@@ -27,7 +27,6 @@ public:
     void sendMessUpdateUsers(int userID, QString userName,
                                int roomID, QString roomName, setUpdateUsers param);
     void sendMessInvite();
-    void messRejectInvite(QString invitedName, QString roomName);
     //void connectDB();
     void setOffLine(int userID);
 private:
@@ -51,12 +50,14 @@ private:
     void backAuth();
     void backAcceptInvite();
     void backRejectInvite();
+    void backDelUser();
 
     void prepareDistribNewMess();
     void prepareDistribMessDelRoom();
     void prepareMessInvite();
     void prepareMessRejectInvite();
     void prepareDistribAcceptInvite();
+    void prepareDistribDelUser();
 signals:
     void connectClosed();
     void sessionClosed(int id);
@@ -69,7 +70,6 @@ signals:
                            int roomID, QString roomName, setUpdateUsers param);
     void sendInvite(int invitedUserID, QString senderName,
                         QString roomName, QString textInvite, int roomID);
-    void sendRejectInvite(int idSenderInvite, QString invitedName, int roomID, QString roomName);
     void readyWrite(QVariantMap mapParam);
 };
 

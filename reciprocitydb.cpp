@@ -48,6 +48,16 @@ int reciprocityDB::getNewRoomID(int userID, QString roomName)
     return roomID;
 }
 
+int reciprocityDB::getUserStatus(int userID, int roomID)
+{
+    QSqlQuery qUser = query->getUserStatus(userID,roomID);
+    int statusID = 0;
+    while (qUser.next()){
+        statusID = qUser.value(0).toInt();
+    }
+    return statusID;
+}
+
 
 QString reciprocityDB::getRoomName(int roomID)
 {
@@ -212,8 +222,7 @@ void reciprocityDB::rejectInvite(int inviteID)
 
 void reciprocityDB::deleteUser(int userID, int roomID)
 {
-    //queryPull query;
-    QSqlQuery qDel=query->deleteUser(userID,roomID);
+    query->deleteUser(userID,roomID);
 }
 
 void reciprocityDB::connectChatToDB()

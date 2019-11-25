@@ -9,10 +9,10 @@
 
 enum setQuery {getUserIdUserName, getWaitInvitation, getRoomName, getUserName,
               getRole, getUnreadMess, getReadMess, getMembers, getRooms, getMembersIdOnline,
-              getRoomID, getUserID,
+              getRoomID, getUserID, getUserStatus,
               setOnLine, setOffLine,
               insertNewMess, insertNewRoom, insertAdminToRoom,insertNewInvite, insertInvitedUsers,
-              delRoom,
+              deleteRoom, deleteUser,
               updateInvite};
 
 class queryPull: public QSqlQuery
@@ -31,6 +31,7 @@ public:
     QSqlQuery getMembersIdOnline(int roomID, int senderID);
     QSqlQuery getRoomID(QString roomName);
     QSqlQuery getUserID(QString userName);
+    QSqlQuery getUserStatus(int userID, int roomID);
 
     QSqlQuery setOnLine(int userID);
     QSqlQuery setOffLine(int userID);
@@ -42,6 +43,7 @@ public:
     QSqlQuery insertInvitedUsers(int roomID, int userID, int statusID);
 
     bool deleteRoom(int roomID);
+    bool deleteUser(int userID, int roomID);
 
     QSqlQuery selectUserFromRoom(int roomID, int senderID);
     QSqlQuery selectUserIdFromRoom(int roomID);
@@ -55,7 +57,7 @@ public:
     QSqlQuery selectInvitedUserName(int inviteID);
     QSqlQuery selectInvitedRoomName(int inviteID);
 
-    QSqlQuery deleteUser(int userID, int roomID);
+
 
     int getNewRoomID(int userID, QString roomName);
 private:

@@ -28,10 +28,11 @@ private:
     void sendNewMess(QList<int> listUserOnline, QString text,
                       QString senderName, int roomID);
     void sendInvite(int invitedUserID);
-    void sendRejectInvite(int idSenderInvite, QString invitedName, QString roomName);
+//    void sendRejectInv(int idSenderInvite, QString invitedName,
+//                          int roomID, QString roomName);
     QObject *mainWindow;
-    const char* logSlot;
-
+    //const char* logSlot;
+    session* getSession(int sessionID);
 signals:
     void serverStarted();
     void logToMainWindow(const QString& massage);

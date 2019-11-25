@@ -31,6 +31,7 @@ public:
     QVariantMap getMapRoomsID(int userID);
     QList<int> getMembersIdOnline(int roomID, int senderID);
     int getNewRoomID(int userID, QString roomName);
+    int getUserStatus(int userID, int roomID);
 
     void setOffLine(int userID);
     void setOnLine(int userID);
@@ -38,11 +39,12 @@ public:
     void insertNewMess(int roomID, int senderID, QString text);
 
     void deleteRoom(int roomID);
+    void deleteUser(int userID, int roomID);
 
     void insertNewInvite(QString text, int roomID, int senderID, int receiverID);
     QVariantMap acceptInvite(int inviteID, int roomID, int userID);
     void rejectInvite(int inviteID);
-    void deleteUser(int userID, int roomID);
+
 private:
     QVariantMap getMapMess(int roomID);
     QVariantMap collectMapMessID(QSqlQuery qMessage);

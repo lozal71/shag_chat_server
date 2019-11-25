@@ -2,6 +2,10 @@
 
 queryPull::queryPull()
 {
+    mapQueries[setQuery::getUserStatus] = "SELECT user_status_id "
+                                          "FROM rooms_users "
+                                          "WHERE user_id = :userID "
+                                          "AND room_id = :roomID ";
     mapQueries[setQuery::getMembersIdOnline] = "SELECT user_id "
                                             "FROM rooms_users "
                                             "WHERE user_status_id = 1 "
@@ -89,7 +93,7 @@ queryPull::queryPull()
     mapQueries[setQuery::insertAdminToRoom] = " INSERT INTO rooms_users "
                                               "(room_id, user_id, user_status_id, user_role_id) "
                                               "VALUES  (:roomID, :userID, 1, 1) ";
-    mapQueries[setQuery::delRoom] = "DELETE FROM rooms "
+    mapQueries[setQuery::deleteRoom] = "DELETE FROM rooms "
                                     "WHERE rooms.id = :roomID ";
     mapQueries[setQuery::getUserID] = "SELECT id "
                                       "FROM users "
@@ -103,6 +107,14 @@ queryPull::queryPull()
     mapQueries[setQuery::insertInvitedUsers] = "INSERT INTO rooms_users "
                                                 "(room_id, user_id, user_status_id, user_role_id) "
                                                 "VALUES  (:roomID, :userID, :statusID, 2) ";
+    mapQueries[setQuery::deleteUser] = "DELETE FROM rooms_users "
+                                       "WHERE rooms_users.user_id = :userID "
+                                       "AND rooms_users.room_id = :roomID";
+    mapSetQuery["deleteUser"] = "DELETE FROM rooms_users "
+                                "WHERE rooms_users.user_id = :userID "
+                                "AND rooms_users.room_id = :roomID";
+
+
 
     mapSetQuery["selectRoomsAdminRole"]="SELECT rooms_users.room_id, rooms.name "
                             "FROM rooms_users "
@@ -343,6 +355,18 @@ QSqlQuery queryPull::getUserID(QString userName)
     return query;
 }
 
+QSqlQuery queryPull::getUserStatus(int userID, int roomID)
+{
+    query.prepare(mapQueries[setQuery::getUserStatus]);
+    query.bindValue(":roomID", roomID);
+    query.bindValue(":userID", userID);
+    if (!query.exec())
+    {
+        qDebug() << mapQueries[setQuery::getUserStatus] << query.lastError();
+    }
+    return query;
+}
+
 QSqlQuery queryPull::insertInvitedUsers(int roomID, int userID, int statusID)
 {
     query.prepare(mapQueries[setQuery::insertInvitedUsers]);
@@ -460,16 +484,17 @@ QSqlQuery queryPull::getMembers(int roomID, int userID)
     return query;
 }
 
-QSqlQuery queryPull::deleteUser(int userID, int roomID)
+bool queryPull::deleteUser(int userID, int roomID)
 {
-    query.prepare(mapSetQuery["deleteUser"]);
+    query.prepare(mapQueries[setQuery::deleteUser]);
     query.bindValue(":userID", userID);
     query.bindValue(":roomID", roomID);
     if (!query.exec())
     {
-        qDebug() << mapSetQuery["deleteUser"] << query.lastError();
+        qDebug() << mapQueries[setQuery::deleteUser] << query.lastError();
+        return true;
     }
-    return query;
+    return false;
 }
 
 bool queryPull::insertNewMess(int roomID, int userID, QString text)
@@ -515,11 +540,11 @@ bool queryPull::insertAdminToRoom(int userID, int roomID)
 
 bool queryPull::deleteRoom(int roomID)
 {
-    query.prepare(mapQueries[setQuery::delRoom]);
+    query.prepare(mapQueries[setQuery::deleteRoom]);
     query.bindValue(":roomID", roomID);
     if (!query.exec())
     {
-        qDebug() << mapQueries[setQuery::delRoom] << query.lastError();
+        qDebug() << mapQueries[setQuery::deleteRoom] << query.lastError();
         return false;
     }
     return true;

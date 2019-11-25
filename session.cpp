@@ -44,7 +44,7 @@ void session::backInvite()
      mapData.insert("invitedUserName",userName);
 
      mapBack.insert("joData", mapData);
-     mapBack.insert("codeCommand", setCodeCommand::Invite);
+     mapBack.insert("codeCommand", setCodeCommand::invite);
      emit readyWrite(mapBack);
 }
 
@@ -57,7 +57,7 @@ void session::backDelRoom()
     mapData.insert("delRoomID", delRoomID);
 
     mapBack.insert("joData", mapData);
-    mapBack.insert("codeCommand", setCodeCommand::DelRoom);
+    mapBack.insert("codeCommand", setCodeCommand::delRoom);
     emit readyWrite(mapBack);
 }
 
@@ -71,7 +71,7 @@ void session::backNewRoom()
     mapData.insert("newRoomName",roomName);
 
     mapBack.insert("joData", mapData);
-    mapBack.insert("codeCommand", setCodeCommand::NewRoom);
+    mapBack.insert("codeCommand", setCodeCommand::newRoom);
     emit readyWrite(mapBack);
 }
 
@@ -114,7 +114,7 @@ void session::backAuth()
     mapData.insert("rooms", mapRooms);
 
     mapBack.insert("joData", mapData);
-    mapBack.insert("codeCommand", setCodeCommand::Auth);
+    mapBack.insert("codeCommand", setCodeCommand::auth);
     // меняем статус клиента на онлайн и записываем текущее время сессии
     db->setOnLine(userID);
     emit readyWrite(mapBack);
@@ -148,11 +148,39 @@ void session::backRejectInvite()
 {
     QVariantMap mapData = mapQuery["joData"].toMap();
     int inviteID = mapData["inviteID"].toInt();
+    mapData.clear();
     // делаем отметку в БД об отклонении приглашения
     db->rejectInvite(inviteID);
 
+    mapData.insert("inviteID",inviteID);
     mapBack.insert("joData", mapData);
-    mapBack.insert("codeCommand", setCodeCommand::acceptInvite);
+    mapBack.insert("codeCommand", setCodeCommand::rejectInvite);
+    emit readyWrite(mapBack);
+}
+
+void session::backDelUser()
+{
+    QVariantMap mapData = mapQuery["joData"].toMap();
+    int roomID = mapData["roomID"].toInt();
+    int userID =  mapData["userID"].toInt();
+    QString roomName = db->getRoomName(roomID);
+    QString userName = db->getUserName(userID);
+//    QString text = client.name + " deleted user " + userName
+//                    + " from " + roomName + " text: " + mapData["text"].toString();
+    mapData.clear();
+
+
+    QDateTime td;
+    td = td.currentDateTime();
+    mapData["updateParam"] = setUpdateUsers::removeUser;
+    mapData["timeMess"] = td;
+    mapData["textMess"] = userName + " is removed the room " + roomName;
+    mapData["senderName"] = client.name;
+    mapData["userID"] = userID;
+    mapData["roomID"] = roomID;
+
+    mapBack.insert("joData", mapData);
+    mapBack.insert("codeCommand", setCodeCommand::delUser);
     emit readyWrite(mapBack);
 }
 
@@ -204,12 +232,19 @@ void session::prepareMessRejectInvite()
 {
     QVariantMap mapData = mapQuery["joData"].toMap();
     int senderID = mapData["senderID"].toInt();
-    QString senderName = mapData["senderName"].toString();
-    QString roomName = mapData["roomName"].toString();
     int roomID =  mapData["roomID"].toInt();
+    int statusID = db->getUserStatus(senderID, roomID);
+    //QString senderName = mapData["senderName"].toString();
+    QString roomName = mapData["roomName"].toString();
     QString invitedName = mapData["invitedName"].toString();
-    QString text = client.name + " reject invite in " + roomName;
-    emit sendRejectInvite(senderID,invitedName,roomID,roomName);
+    QString text = client.name + " rejected an invitation ";
+    db->insertNewMess(roomID, client.id, text);
+    QList<int> listUserOnline;
+    if (statusID == 1) {
+        listUserOnline.append(senderID);
+        // испускаем сигнал: послать приглашавшему сообщение об отказе
+        emit distribNewMess(listUserOnline, text, client.name, roomID);
+    }
 }
 
 void session::prepareDistribAcceptInvite()
@@ -225,7 +260,32 @@ void session::prepareDistribAcceptInvite()
      //испускаем сигнал: послать онлайн-участникам комнаты
      //сообщение о новом пользователе и команду обновить список пользователей в комнате
     emit sendUpdateUsers(listUserOnline, client.id, client.name,
-                           roomID, roomName, setUpdateUsers::addUser);
+                         roomID, roomName, setUpdateUsers::addUser);
+}
+
+void session::prepareDistribDelUser()
+{
+    QVariantMap mapData = mapQuery["joData"].toMap();
+    int roomID = mapData["roomID"].toInt();
+    int userID =  mapData["userID"].toInt();
+    QString roomName = db->getRoomName(roomID);
+    QString userName = db->getUserName(userID);
+    QString text = client.name + " deleted user " + userName
+                    + " from " + roomName + " text: " + mapData["text"].toString();
+    mapData.clear();
+
+
+    // получаем из БД список онлайн-участников комнаты
+    QList<int> listUserOnline = db->getMembersIdOnline(roomID, client.id);
+    // оставляем сообщение
+    db->insertNewMess(roomID,client.id,text);
+    // удаляем пользователя из комнаты в БД
+    db->deleteUser(userID, roomID);
+
+    //испускаем сигнал: послать онлайн-участникам комнаты
+    //сообщение об удалении пользователя и команду обновить список пользователей в комнате
+   emit sendUpdateUsers(listUserOnline, userID, userName,
+                        roomID, roomName, setUpdateUsers::removeUser);
 }
 
 void session::sendMessDelRoom(QString roomName, int roomID, QString adminName)
@@ -240,7 +300,7 @@ void session::sendMessDelRoom(QString roomName, int roomID, QString adminName)
     mapData.insert("roomID", roomID);
 
     mapServerCommand.insert("joData", mapData);
-    mapServerCommand.insert("codeCommand", setCodeCommand::MessDelRoom);
+    mapServerCommand.insert("codeCommand", setCodeCommand::messDelRoom);
     emit readyWrite(mapServerCommand);
 }
 
@@ -255,7 +315,7 @@ void session::sendMess(QString text, QString senderName, int roomID)
     mapData["roomID"] = roomID;
 
     mapServerCommand.insert("joData", mapData);
-    mapServerCommand.insert("codeCommand", setCodeCommand::SendMess);
+    mapServerCommand.insert("codeCommand", setCodeCommand::sendMess);
     emit readyWrite(mapServerCommand);
 }
 
@@ -318,7 +378,7 @@ void session::readQuery()
     }
     else {
         switch (code) {
-        case setCodeCommand::Auth:
+        case setCodeCommand::auth:
         {
             qDebug() <<  "query auth ";
              // обратный ответ запросившему авторизацию
@@ -337,21 +397,21 @@ void session::readQuery()
             prepareDistribNewMess();
             break;
         }
-        case setCodeCommand::NewRoom:
+        case setCodeCommand::newRoom:
         {
             qDebug() <<  "query new room ";
             // обратный ответ инициатору создания комнаты
             backNewRoom();
             break;
         }
-        case setCodeCommand::DelRoom:
+        case setCodeCommand::delRoom:
         {
             qDebug() <<  "query del room ";
             backDelRoom();
             prepareDistribMessDelRoom();
             break;
         }
-        case setCodeCommand::Invite:
+        case setCodeCommand::invite:
         {
             qDebug() <<  "query invite ";
             backInvite();
@@ -369,58 +429,23 @@ void session::readQuery()
         {
             qDebug() <<  "query rejectInvite ";
             backRejectInvite();
-//            int inviteID = mapData["inviteID"].toInt();
-//            // делаем отметку в БД об отклонении приглашения
-//            db->rejectInvite(inviteID);
-            // получаем данные о комнате, приглашение в которую было отказано
-            QMap<int, QString> room = db->getInvitedRoom(inviteID);
-            QString text = client.name + " reject invite in " + room.first();
-            // записываем в БД сообщение об отклонении приглашения и
-            // получаем из БД список онлайн-участников комнаты
-           // QList<int> listUserOnline = db->insertNewMess(room.firstKey(), client.id, text);
-            // испускаем сигнал: послать онлайн-участникам комнаты
-            // сообщение об отклонении приглашения
-           // emit distribNewMess(listUserOnline, text, client.name, room.firstKey());
-            // обратный ответ пославшениму отклонение приглашения
-            //mapBack["inviteID"] = inviteID;
+            prepareMessRejectInvite();
             break;
         }
         case setCodeCommand::delUser:
         {
             qDebug() <<  "query delete user";
-            int roomID = mapData["roomID"].toInt();
-            int userID =  mapData["userID"].toInt();
-            QString roomName = db->getRoomName(roomID);
-            QString userName = db->getUserName(userID);
-            QString text = client.name + " deleted user " + userName
-                            + " from " + roomName + " text: " + mapData["text"].toString();
-            // записываем в БД сообщение об удалении пользователя из комнаты и
-            // получаем из БД список онлайн-участников комнаты
-           // QList<int> listUserOnline = db->insertNewMess(roomID, client.id, text);
-            // испускаем сигнал: послать онлайн-участникам комнаты
-            // сообщение об удалении пользователя и команду обновить список пользователей в комнате
-           // emit sendUpdateUsers(listUserOnline, userID, userName,
-           //                        roomID, roomName, setUpdateUsers::removeUser);
-            // удаляем пользователя из комнаты в БД
-            db->deleteUser(userID, roomID);
-            // обратный ответ инициатору удаления пользователя
-            QDateTime td;
-            td = td.currentDateTime();
-            mapBack["updateParam"] = setUpdateUsers::removeUser;
-            mapBack["timeMess"] = td;
-            mapBack["textMess"] = "you is removed from room " + roomName;
-            mapBack["senderName"] = "you";
-            mapBack["userID"] = userID;
-            mapBack["roomID"] = roomID;
+            backDelUser();
+            prepareDistribDelUser();
             break;
         }
-        case setCodeCommand::MessDelRoom:
+        case setCodeCommand::messDelRoom:
         {
             // эта команда не приходит от клиента, а инициируется на сервере,
             // поэтому здесь не рассматривается
             break;
         }
-        case setCodeCommand::SendMess:
+        case setCodeCommand::sendMess:
         {
             // эта команда не приходит от клиента, а инициируется на сервере,
             // поэтому здесь не рассматривается
