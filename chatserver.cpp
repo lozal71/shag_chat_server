@@ -34,18 +34,6 @@ void chatServer::sendMessDelRoom(QList<int> listUserOnline, int roomID,
             currentID = id.next();
             session* currentSession = getSession(currentID);
             currentSession->sendMessDelRoom(roomName, roomID, adminName);
-//            // просматриваем список сессий
-//            QListIterator<session*> i(sessionList);
-//            session* currentSession;
-//            while (i.hasNext()){
-//                currentSession = i.next();
-//                // если найдена сессия для онлайн-участника комнаты
-//                if (currentSession->getClientID() == currentID){
-//                    // посылаем сообщение клиенту об удалении комнаты
-//                    currentSession->sendMessDelRoom(roomName, roomID, adminName);
-//                    break;
-//                }
-//            }
         }
     }
 }
@@ -63,19 +51,6 @@ void chatServer::sendMessUpdateUsesrs(QList<int> listUserOnline, int userID,
             session* currentSession = getSession(currentID);
             currentSession->sendMessUpdateUsers(userID, userName,
                                             roomID, roomName, param);
-            // просматриваем список сессий
-//            QListIterator<session*> i(sessionList);
-//            while (i.hasNext()){
-//                currentSession = i.next();
-//                // если найдена сессия для онлайн-участника комнаты
-//                if (currentSession->getClientID() == currentID){
-//                    // посылаем клиенту сообщение о появлении/удалении пользователя
-//                    // и команду изменить список участников комнаты
-//                    currentSession->sendMessUpdateUsers(userID, userName,
-//                                                    roomID, roomName, param);
-//                    break;
-//                }
-//            }
         }
     }
 }
@@ -91,19 +66,6 @@ void chatServer::sendNewMess(QList<int> listUserOnline, QString text,
             currentID = id.next();
             session* currentSession = getSession(currentID);
             currentSession->sendMess(text, senderName, roomID);
-//            // просматриваем список сессий
-//            QListIterator<session*> iSession(sessionList);
-//            session* currentSession;
-//            while (iSession.hasNext()){
-//                currentSession = iSession.next();
-//                // если найдена сессия для онлайн-участника комнаты
-//                if (currentSession->getClientID() == currentID){
-//                    // посылаем клиенту новое сообщение в комнату
-//                    currentSession->sendMess(text, senderName, roomID);
-//                    break;
-//                }
-//            }
-
         }
     }
 }
@@ -113,26 +75,8 @@ void chatServer::sendInvite(int invitedUserID)
 {
     session* currentSession = getSession(invitedUserID);
     currentSession->sendMessInvite();
-//    // просматриваем список сессий
-//    QListIterator<session*> iSession(sessionList);
-//    session* currentSession;
-//    while (iSession.hasNext()){
-//        currentSession = iSession.next();
-//        // если найдена сессия для приглашаемого участника
-//        if (currentSession->getClientID() ==invitedUserID){
-//            // посылаем приглашение
-//            currentSession->sendMessInvite();
-//            break;
-//        }
-    //    }
 }
 
-//void chatServer::sendRejectInv(int idSenderInvite, QString invitedName,
-//                                  int roomID, QString roomName)
-//{
-//    session* currentSession = getSession(idSenderInvite);
-//    currentSession->sendMessRejectInvite(invitedName,roomID, roomName);
-//}
 
 session *chatServer::getSession(int sessionID)
 {

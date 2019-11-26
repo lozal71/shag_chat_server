@@ -12,7 +12,7 @@ reciprocityDB::~reciprocityDB()
 
 QMap<int, QString> reciprocityDB::getUserIdUserName(QString login, QString pass)
 {
-    qDebug() << "getUserIdUserName";
+    //qDebug() << "getUserIdUserName";
      int userID = 0;
      QString userName;
      QMap<int, QString> temp;
@@ -21,7 +21,7 @@ QMap<int, QString> reciprocityDB::getUserIdUserName(QString login, QString pass)
         userID = qAuth.value(0).toInt();
         userName = qAuth.value(1).toString();
     }
-    qDebug() << userID << " " << userName;
+    //qDebug() << userID << " " << userName;
     temp.insert(userID, userName);
     return temp;
 }
@@ -66,7 +66,7 @@ QString reciprocityDB::getRoomName(int roomID)
     while(qRoomName.next()){
         roomName = qRoomName.value(0).toString();
     }
-    qDebug() << "getRoomName roomName" << roomName;
+    //qDebug() << "getRoomName roomName" << roomName;
     return roomName;
 }
 
@@ -92,7 +92,7 @@ int reciprocityDB::getUserID(QString userName)
 
 QString reciprocityDB::getRole(int roleID)
 {
-    qDebug() << "getRole";
+    //qDebug() << "getRole";
     QString role;
     QSqlQuery qRole = query->getRole(roleID);
     while (qRole.next()){
@@ -109,7 +109,7 @@ int reciprocityDB::getInvitedUserID(QString userName, int roomID, int senderID)
     while (qUserID.next()){
         invitedUserID = qUserID.value(0).toInt();
     }
-    qDebug() << "invitedUserID" << invitedUserID;
+    //qDebug() << "invitedUserID" << invitedUserID;
     if (invitedUserID != 0) {
         QSqlQuery qMembers = query->getMembers(roomID, senderID);
         while (qMembers.next()){
@@ -119,7 +119,7 @@ int reciprocityDB::getInvitedUserID(QString userName, int roomID, int senderID)
             }
         }
     }
-    qDebug() << "invitedUserID" << invitedUserID;
+    //qDebug() << "invitedUserID" << invitedUserID;
     return invitedUserID;
 }
 
@@ -177,7 +177,7 @@ QVariantMap reciprocityDB::getMembers(int roomID, int userID)
 
 QVariantMap reciprocityDB::getInvitations(int userID)
 {
-    qDebug() << "getInvitations";
+    //qDebug() << "getInvitations";
     QVariantMap mapInvitations;
     QVariantMap mapInvite;
     int inviteID =0;

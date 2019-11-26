@@ -216,7 +216,7 @@ void session::prepareMessInvite()
     QVariantMap mapData = mapQuery["joData"].toMap();
     int invitedUserID = mapBack["joData"].toMap()["invitedUserID"].toInt();
     // если приглашаемый участник  - допустим
-    if (invitedUserID !=0 and invitedUserID != -1)
+    if (invitedUserID !=0 && invitedUserID != -1)
     {
         QString textInvite = mapData["textInvite"].toString();
         int roomID = mapData["roomID"].toInt();
@@ -274,7 +274,6 @@ void session::prepareDistribDelUser()
                     + " from " + roomName + " text: " + mapData["text"].toString();
     mapData.clear();
 
-
     // получаем из БД список онлайн-участников комнаты
     QList<int> listUserOnline = db->getMembersIdOnline(roomID, client.id);
     // оставляем сообщение
@@ -331,6 +330,9 @@ void session::sendMessUpdateUsers(int userID, QString userName,
         mapData.insert("textMess",userName + " is added to room " + roomName);
     }
     else {
+        if (client.id == userID){
+                mapData.insert("updateParam", setUpdateUsers::delIsYou);
+        }
         mapData.insert("textMess",userName + " is removed from room " + roomName);
     }
     mapData.insert("senderName", userName);

@@ -7,7 +7,7 @@
 #include "protocol_out.h"
 #include "reciprocitydb.h"
 
-enum setUpdateUsers {addUser, removeUser};
+enum setUpdateUsers {addUser, removeUser, delIsYou};
 enum setCodeCommand {auth = 1, newMess = 2, newRoom = 3, delRoom = 4,
                      messDelRoom = 5, sendMess = 6, invite = 7, questInvite = 8,
                      acceptInvite = 9, rejectInvite = 10, delUser = 11, updateUsers = 12};
