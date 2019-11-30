@@ -12,7 +12,7 @@ class reciprocityDB: public QObject
 public:
     reciprocityDB();
     ~reciprocityDB();
-    queryPull *query;
+    queryPull  *queryP;
     QSqlDatabase chatDB;
 
     void connectChatToDB();

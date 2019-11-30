@@ -27,6 +27,7 @@ public:
     void sendMessUpdateUsers(int userID, QString userName,
                                int roomID, QString roomName, setUpdateUsers param);
     void sendMessInvite();
+    void sendMessToDelUser(int roomID, QString textDel);
     //void connectDB();
     void setOffLine(int userID);
 private:
@@ -70,6 +71,7 @@ signals:
                            int roomID, QString roomName, setUpdateUsers param);
     void sendInvite(int invitedUserID, QString senderName,
                         QString roomName, QString textInvite, int roomID);
+    void sendToDelUser(int delUserID, int roomID, QString textDel);
     void readyWrite(QVariantMap mapParam);
 };
 

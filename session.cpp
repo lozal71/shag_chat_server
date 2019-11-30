@@ -158,6 +158,7 @@ void session::backRejectInvite()
     emit readyWrite(mapBack);
 }
 
+// обратный ответ администратору комнаты, который удаляет пользователя
 void session::backDelUser()
 {
     QVariantMap mapData = mapQuery["joData"].toMap();
@@ -165,10 +166,7 @@ void session::backDelUser()
     int userID =  mapData["userID"].toInt();
     QString roomName = db->getRoomName(roomID);
     QString userName = db->getUserName(userID);
-//    QString text = client.name + " deleted user " + userName
-//                    + " from " + roomName + " text: " + mapData["text"].toString();
     mapData.clear();
-
 
     QDateTime td;
     td = td.currentDateTime();
@@ -255,7 +253,7 @@ void session::prepareDistribAcceptInvite()
     int roomID = mapData["roomID"].toInt();
     //получаем из БД список онлайн-участников комнаты
     QList<int> listUserOnline = db->getMembersIdOnline(roomID, client.id);
-     //записываем в БД сообщение о принятии приглашения и
+     //записываем в БД сообщение о принятии приглашения
     db->insertNewMess(roomID, client.id, userName + " accepted invite");
      //испускаем сигнал: послать онлайн-участникам комнаты
      //сообщение о новом пользователе и команду обновить список пользователей в комнате
@@ -270,20 +268,29 @@ void session::prepareDistribDelUser()
     int userID =  mapData["userID"].toInt();
     QString roomName = db->getRoomName(roomID);
     QString userName = db->getUserName(userID);
-    QString text = client.name + " deleted user " + userName
-                    + " from " + roomName + " text: " + mapData["text"].toString();
+    QString textMess = client.name + " deleted user " + userName  + " from " + roomName;
+    QString textDel =  textMess + " text" + mapData["text"].toString();
     mapData.clear();
 
     // получаем из БД список онлайн-участников комнаты
     QList<int> listUserOnline = db->getMembersIdOnline(roomID, client.id);
     // оставляем сообщение
-    db->insertNewMess(roomID,client.id,text);
+    db->insertNewMess(roomID, client.id, textMess);
+    // если удаляемый пользователь - не в сети , оставляем сообщение
+    // для него в комнате default (id=1)
+    if (!listUserOnline.contains(userID)){
+        db->insertNewMess(1, client.id, textDel);
+    }
+    else {
+        emit sendToDelUser(userID, roomID, textDel);
+    }
     // удаляем пользователя из комнаты в БД
     db->deleteUser(userID, roomID);
-
+    // снова получаем из БД список онлайн-участников комнаты (уже без удаляемого)
+    listUserOnline = db->getMembersIdOnline(roomID, client.id);
     //испускаем сигнал: послать онлайн-участникам комнаты
     //сообщение об удалении пользователя и команду обновить список пользователей в комнате
-   emit sendUpdateUsers(listUserOnline, userID, userName,
+    emit sendUpdateUsers(listUserOnline, userID, userName,
                         roomID, roomName, setUpdateUsers::removeUser);
 }
 
@@ -350,6 +357,23 @@ void session::sendMessInvite()
     mapData["invite"] = db->getInvitations(this->client.id);
     mapServerCommand.insert("joData", mapData);
     mapServerCommand.insert("codeCommand", setCodeCommand::questInvite);
+    emit readyWrite(mapServerCommand);
+}
+
+void session::sendMessToDelUser(int roomID, QString textDel)
+{
+    QVariantMap mapData;
+    QDateTime td;
+    td = td.currentDateTime();
+    mapData.insert("timeMess", td);
+    mapData.insert("updateParam", setUpdateUsers::delIsYou);
+    mapData.insert("roomID", roomID);
+    mapData.insert("textDel", textDel);
+    mapData.insert("senderName", "admin");
+    mapData.insert("userID", 0);
+    mapData.insert("textMess", textDel);
+    mapServerCommand.insert("joData", mapData);
+    mapServerCommand.insert("codeCommand", setCodeCommand::updateUsers);
     emit readyWrite(mapServerCommand);
 }
 

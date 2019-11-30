@@ -28,8 +28,7 @@ private:
     void sendNewMess(QList<int> listUserOnline, QString text,
                       QString senderName, int roomID);
     void sendInvite(int invitedUserID);
-//    void sendRejectInv(int idSenderInvite, QString invitedName,
-//                          int roomID, QString roomName);
+    void sendMessToDelUser(int delUserID, int roomID, QString textDel);
     QObject *mainWindow;
     //const char* logSlot;
     session* getSession(int sessionID);

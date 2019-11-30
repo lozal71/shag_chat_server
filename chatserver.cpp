@@ -77,6 +77,12 @@ void chatServer::sendInvite(int invitedUserID)
     currentSession->sendMessInvite();
 }
 
+void chatServer::sendMessToDelUser(int delUserID, int roomID, QString textDel)
+{
+     session* currentSession = getSession(delUserID);
+     currentSession->sendMessToDelUser(roomID, textDel);
+}
+
 
 session *chatServer::getSession(int sessionID)
 {
@@ -121,8 +127,12 @@ void chatServer::newClient()
             this, &chatServer::sendInvite);
     connect(sessionPntr, &session::sendUpdateUsers,
             this, &chatServer::sendMessUpdateUsesrs);
+    connect(sessionPntr, &session::sendToDelUser,
+            this, &chatServer::sendMessToDelUser);
+
     connect(this, &chatServer::sessionClosedForDB,
             sessionPntr,&session::setOffLine);
+
 }
 
 void chatServer::removeSession()
