@@ -14,7 +14,7 @@ void net::writeSocket(QVariantMap mapSocket)
 {
     jsonDoc = QJsonDocument::fromVariant(mapSocket);
     transferJSONtoBA();
-    qDebug() << jsonDoc;
+    //qDebug() << jsonDoc;
      this->socket->write(baPackage);
 }
 

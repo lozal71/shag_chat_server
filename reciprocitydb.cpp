@@ -324,7 +324,7 @@ void reciprocityDB::setOffLine(int userID)
 void reciprocityDB::setOnLine(int userID)
 {
     QVariantList lst;
-    lst << userID;
+    lst  << QDateTime::currentDateTime() << userID;
     queryP->makeQuery(setQuery::setOnLine,lst);
     //query->setOnLine(userID);
 }

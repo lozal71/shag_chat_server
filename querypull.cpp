@@ -81,8 +81,8 @@ QMap<int, QString> queryPull::numberParam =
                                "WHERE rooms_users.user_id = :1"},
 
           {setQuery::setOnLine, "UPDATE users "
-                                            "SET status = 1,  time_session =:td "
-                                            "WHERE id = :1"},
+                                "SET status = 1,  time_session =:1 "
+                                "WHERE id = :2"},
 
           {setQuery::setOffLine, "UPDATE users "
                                              "SET status = 2, time_last_session = time_session "
@@ -106,8 +106,8 @@ QMap<int, QString> queryPull::numberParam =
           {setQuery::deleteRoom, "DELETE FROM rooms "
                                           "WHERE rooms.id = :1"},
           {setQuery::getUserID, "SELECT id "
-                                            "FROM users "
-                                            "WHERE name = :1"},
+                                "FROM users "
+                                "WHERE name = :1"},
           {setQuery::insertNewInvite, "INSERT INTO invitations "
                                                   "(text, room_id, sender_id, receiver_id, status_id) "
                                                   "VALUES (:1, :2, :3, :4, 3)"},

@@ -36,6 +36,7 @@ void session::setConnectSession()
 void session::backInvite()
 {
      QVariantMap mapData = mapQuery["joData"].toMap();
+     qDebug() << mapData;
      // узнаем id приглашаемого участника комнаты по его имени
      QString userName = mapData["userName"].toString();
      int roomID = mapData["roomID"].toInt();
