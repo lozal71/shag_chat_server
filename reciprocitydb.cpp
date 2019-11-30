@@ -20,7 +20,6 @@ QMap<int, QString> reciprocityDB::getUserIdUserName(QString login, QString pass)
 //     QSqlQuery qAuth = query->getUserIdUserName(login,pass);
      QVariantList lst;
      lst << login << pass;
-     qDebug() << lst;
      QSqlQuery qAuth = queryP->makeQuery(setQuery::getUserIdUserName, lst);
     while (qAuth.next()){
         userID = qAuth.value(0).toInt();
@@ -35,8 +34,7 @@ void reciprocityDB::insertNewMess(int roomID, int senderID, QString text)
 {
    // query->insertNewMess(roomID, senderID, text);
     QVariantList lst;
-    QDateTime td;
-    lst << roomID << senderID << text << td.currentDateTime();
+    lst << roomID << senderID << text << QDateTime::currentDateTime();
     queryP->makeQuery(setQuery::insertNewMess,lst);
 }
 
@@ -54,8 +52,6 @@ int reciprocityDB::getNewRoomID(int userID, QString roomName)
     lst << roomName;
     queryP->makeQuery(setQuery::insertNewRoom,lst);
     //query->insertNewRoom(roomName);
-    lst.clear();
-    lst << userID << roomName;
 //    QSqlQuery qRoom = query->getRoomID(roomName);
     QSqlQuery qRoom = queryP->makeQuery(setQuery::getRoomID,lst);
     int roomID = 0;
@@ -148,7 +144,7 @@ int reciprocityDB::getInvitedUserID(QString userName, int roomID, int senderID)
     while (qUserID.next()){
         invitedUserID = qUserID.value(0).toInt();
     }
-    //qDebug() << "invitedUserID" << invitedUserID;
+   // qDebug() << "invitedUserID" << invitedUserID;
     lst.clear();
     lst << roomID << senderID;
     if (invitedUserID != 0) {

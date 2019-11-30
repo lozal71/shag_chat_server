@@ -119,6 +119,7 @@ void chatServer::newClient()
     // связь прервалась - удаляем сессию
     connect(sessionPntr, &session::connectClosed,
             this, &chatServer::removeSession);
+
     connect(sessionPntr, &session::distribMessDelRoom,
             this, &chatServer::sendMessDelRoom);
     connect(sessionPntr, &session::distribNewMess,

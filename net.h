@@ -1,20 +1,18 @@
-#ifndef PROTOCOLOUT_H
-#define PROTOCOLOUT_H
+#ifndef NET_H
+#define NET_H
 #include <QDataStream>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QTcpSocket>
 #include <QJsonObject>
 
-class protocolOut: public QObject
+class net: public QObject
 {
     Q_OBJECT
 public:
-    protocolOut();
-    protocolOut(QTcpSocket *socket);
-    //QByteArray getPackage();
-    //void setPackage(QJsonDocument jdParam);
-    void writeSocket(QVariantMap mapSocket);
+    net();
+    net(QTcpSocket *socket);
+     void writeSocket(QVariantMap mapSocket);
     QVariantMap readSocket();
     bool isError();
 private:
@@ -26,4 +24,4 @@ private:
     bool flag_error;
 };
 
-#endif // PROTOCOLOUT_H
+#endif // NET_H

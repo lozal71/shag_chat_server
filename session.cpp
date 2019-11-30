@@ -8,8 +8,10 @@ session::session()
 session::session(QTcpSocket *socket)
 {
     socketSession = socket;
-    protocol = new protocolOut(socket);
+    protocol = new net(socket);
     db = new reciprocityDB();
+    client.id = 0;
+    client.name = "";
     setConnectSession();
 }
 
@@ -27,7 +29,7 @@ void session::setConnectSession()
     connect(socketSession, &QTcpSocket::disconnected,
             this, &session::connectClosed);
     connect(this, &session::readyWrite,
-            protocol, &protocolOut::writeSocket);
+            protocol, &net::writeSocket);
 }
 
 // обратный ответ пославшему приглашение
@@ -329,9 +331,9 @@ void session::sendMessUpdateUsers(int userID, QString userName,
                                    int roomID, QString roomName, setUpdateUsers param)
 {
     QVariantMap mapData;
-    QDateTime td;
-    td = td.currentDateTime();
-    mapData.insert("timeMess", td);
+//    QDateTime td;
+//    td = td.currentDateTime();
+    mapData.insert("timeMess", QDateTime::currentDateTime());
     mapData.insert("updateParam", param);
     if (param == setUpdateUsers::addUser){
         mapData.insert("textMess",userName + " is added to room " + roomName);

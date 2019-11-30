@@ -19,8 +19,7 @@ SOURCES += \
     chatserver.cpp \
     main.cpp \
     mainwindow.cpp \
-    protocol_in.cpp \
-    protocol_out.cpp \
+    net.cpp \
     querypull.cpp \
     reciprocitydb.cpp \
     session.cpp
@@ -28,8 +27,7 @@ SOURCES += \
 HEADERS += \
     chatserver.h \
     mainwindow.h \
-    protocol_in.h \
-    protocol_out.h \
+    net.h \
     querypull.h \
     reciprocitydb.h \
     session.h

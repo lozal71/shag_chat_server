@@ -2,9 +2,7 @@
 #define SESSION_H
 
 #include <QTcpSocket>
-//#include <QJsonObject>
-//#include "protocol_in.h"
-#include "protocol_out.h"
+#include "net.h"
 #include "reciprocitydb.h"
 
 enum setUpdateUsers {addUser, removeUser, delIsYou};
@@ -32,7 +30,7 @@ public:
     void setOffLine(int userID);
 private:
     QTcpSocket *socketSession;
-    protocolOut *protocol;
+    net *protocol;
     reciprocityDB *db;
     QVariantMap mapQuery;
     QVariantMap mapBack;

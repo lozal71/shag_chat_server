@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QVariantMap>
 #include "querypull.h"
-
+#include <QDateTime>
 
 class reciprocityDB: public QObject
 {

@@ -1,59 +1,34 @@
-#include "protocol_out.h"
+#include "net.h"
 
-protocolOut::protocolOut()
+net::net()
 {
 
 }
 
-protocolOut::protocolOut(QTcpSocket *socket)
+net::net(QTcpSocket *socket)
 {
     this->socket = socket;
 }
 
-
-//QByteArray protocolOut::getPackage()
-//{
-//    //qDebug() << "getPackage baPackage" <<baPackage ;
-//    return baPackage;
-//}
-
-//void protocolOut::setPackage(QJsonDocument jdParam)
-//{
-//    baPackage.clear();
-//    //qDebug() << "jdParam" << jdParam;
-//    QByteArray baTemp = jdParam.toJson(QJsonDocument::Compact);
-//    //quint32 packageSize = str.length();
-//    //qDebug() << "baTemp" << baTemp;
-//    quint32 packageSize = quint32(baTemp.size());
-//    //qDebug() << "packageSize" << packageSize;
-//    QDataStream stream(&baPackage, QIODevice::ReadWrite);
-//    stream << packageSize;
-//    stream << baTemp;
-//    //qDebug() << "setPackage baPackage" <<baPackage ;
-//}
-
-void protocolOut::writeSocket(QVariantMap mapSocket)
+void net::writeSocket(QVariantMap mapSocket)
 {
     jsonDoc = QJsonDocument::fromVariant(mapSocket);
     transferJSONtoBA();
-    //out->setPackage(jdResponse);
-   // qDebug() << client.id; // << out->getPackage();
-    //qDebug() << jsonDoc;
-    this->socket->write(baPackage);
+    qDebug() << jsonDoc;
+     this->socket->write(baPackage);
 }
 
-QVariantMap protocolOut::readSocket()
+QVariantMap net::readSocket()
 {
     QVariantMap mapCommand;
     transferBAtoJSON();
     QJsonObject joTemp = jsonDoc.object();
+    qDebug() << joTemp;
     return mapCommand =joTemp.toVariantMap();
 }
 
-void protocolOut::transferBAtoJSON()
+void net::transferBAtoJSON()
 {
-    //qDebug() << "receiveJSONdoc";
-    //QJsonDocument jdTemp;
     flag_error = false;
     // если в сокете меньше, чем 4 байта
     if (socket->bytesAvailable() < 4){
@@ -101,18 +76,16 @@ void protocolOut::transferBAtoJSON()
     //return jdTemp;
 }
 
-bool protocolOut::isError()
+bool net::isError()
 {
     return flag_error;
 }
 
-void protocolOut::transferJSONtoBA()
+void net::transferJSONtoBA()
 {
     baPackage.clear();
     //qDebug() << "jdParam" << jdParam;
     QByteArray baTemp = jsonDoc.toJson(QJsonDocument::Compact);
-    //quint32 packageSize = str.length();
-    //qDebug() << "baTemp" << baTemp;
     quint32 packageSize = quint32(baTemp.size());
     //qDebug() << "packageSize" << packageSize;
     QDataStream stream(&baPackage, QIODevice::ReadWrite);

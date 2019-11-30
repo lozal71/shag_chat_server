@@ -30,11 +30,9 @@ private:
     void sendInvite(int invitedUserID);
     void sendMessToDelUser(int delUserID, int roomID, QString textDel);
     QObject *mainWindow;
-    //const char* logSlot;
     session* getSession(int sessionID);
 signals:
     void serverStarted();
-    void logToMainWindow(const QString& massage);
     void sessionClosedForDB(int id);
 
 };
