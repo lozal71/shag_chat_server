@@ -265,7 +265,9 @@ QVariantMap reciprocityDB::acceptInvite(int inviteID, int roomID, int userID)
 {
     QVariantMap mapMess;
     QVariantList lst;
-    lst << 1 << inviteID;
+    int status = 1;
+    lst << status << inviteID;
+    qDebug() << "acceptInvite" << lst;
     queryP->makeQuery(setQuery::updateInvite,lst);
     //query->updateInvite(inviteID,1);
     lst.clear();
@@ -281,7 +283,8 @@ void reciprocityDB::rejectInvite(int inviteID)
     //queryPull query;
     //query->updateInvite(inviteID,2);
     QVariantList lst;
-    lst << 2 << inviteID;
+    int status = 2;
+    lst << status << inviteID;
     queryP->makeQuery(setQuery::updateInvite,lst);
 }
 
